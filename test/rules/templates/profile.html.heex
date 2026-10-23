@@ -1,0 +1,10 @@
+<div class="profile">
+  <!-- ruleid: exs-xss-001-template -->
+  <p><%= raw(@user.bio) %></p>
+  <!-- ok: exs-xss-001-template -->
+  <p>{@user.name}</p>
+  <!-- ruleid: exs-xss-001-template -->
+  <p>{Phoenix.HTML.raw(@user.signature)}</p>
+  <!-- ok: exs-xss-001-template -->
+  <p class="draw">{@user.draw_count}</p>
+</div>

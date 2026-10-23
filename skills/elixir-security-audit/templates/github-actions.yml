@@ -1,0 +1,81 @@
+# elixir-security-audit — GitHub Actions 템플릿 / CI template
+#
+# 사용법 (KO): 이 파일을 프로젝트의 .github/workflows/elixir-security.yml 로 복사하세요.
+#   mix.exs 의 deps 에 다음을 추가해야 합니다:
+#     {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+#     {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
+#   ELIXIR_VERSION / OTP_VERSION 은 프로젝트에 맞게 바꾸세요.
+#   경고 숨기기(.sobelow-skips 등)는 근거를 남기고 리뷰를 거친 뒤에만 사용하세요.
+#
+# Usage (EN): copy this file to .github/workflows/elixir-security.yml in your project.
+#   Add sobelow and mix_audit to your deps (see above) and adjust the versions below.
+#   Only suppress findings (.sobelow-skips etc.) with a recorded justification.
+
+name: Elixir security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # 매주 월요일 03:00 UTC — 새 권고(advisory) 확인 / weekly check for new advisories
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ELIXIR_VERSION: "1.18"
+  OTP_VERSION: "27"
+  MIX_ENV: test
+
+jobs:
+  elixir-audit:
+    name: hex.audit / deps.audit / sobelow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+
+      - name: Cache deps and _build
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ env.ELIXIR_VERSION }}-${{ env.OTP_VERSION }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.ELIXIR_VERSION }}-${{ env.OTP_VERSION }}-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      # Retired 패키지 (및 최신 Hex 에서는 보안 권고) / retired packages (and advisories on newer Hex)
+      - name: mix hex.audit
+        run: mix hex.audit
+
+      # 알려진 CVE 가 있는 의존성 / dependencies with known advisories
+      - name: mix deps.audit
+        run: mix deps.audit
+
+      # Phoenix 정적 분석: medium 이상 신뢰도에서 실패 / fail on medium+ confidence
+      # 우산(umbrella) 프로젝트는 앱별로 `mix sobelow --root apps/<app>` 을 실행하세요.
+      - name: mix sobelow
+        run: mix sobelow --exit medium --format txt
+
+  osv-scanner:
+    # 선택 사항: mix.lock 을 OSV 데이터베이스로 교차 확인 / optional OSV cross-check
+    name: osv-scanner
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.5.1
+    with:
+      scan-args: |-
+        --lockfile=mix.lock

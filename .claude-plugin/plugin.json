@@ -1,0 +1,10 @@
+{
+  "name": "elixir-security-audit",
+  "version": "0.1.0",
+  "description": "Scan, triage, fix and verify security issues in Elixir/Phoenix projects with Sobelow, mix_audit, hex.audit, OSV-Scanner and Semgrep rules.",
+  "author": { "name": "Baryon Labs", "url": "https://github.com/baryonlabs" },
+  "homepage": "https://github.com/baryonlabs/elixir-security-audit",
+  "repository": "https://github.com/baryonlabs/elixir-security-audit",
+  "license": "MIT",
+  "keywords": ["elixir", "phoenix", "security", "sobelow", "mix_audit", "semgrep", "sast"]
+}

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck skills/elixir-security-audit/scripts/*.sh test/*.sh test/rules/*.sh
+      - name: python syntax
+        run: python3 -m py_compile skills/elixir-security-audit/scripts/summarize.py
+
+  semgrep-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install opengrep (Semgrep OSS skips Elixir rules)
+        run: |
+          curl -fsSL -o /usr/local/bin/opengrep https://github.com/opengrep/opengrep/releases/download/v1.32.0/opengrep_manylinux_x86
+          chmod +x /usr/local/bin/opengrep
+          opengrep --version
+      - run: bash test/rules/run.sh
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18.4"
+          otp-version: "27"
+      - name: install opengrep (Semgrep OSS skips Elixir rules)
+        run: |
+          curl -fsSL -o /usr/local/bin/opengrep https://github.com/opengrep/opengrep/releases/download/v1.32.0/opengrep_manylinux_x86
+          chmod +x /usr/local/bin/opengrep
+          opengrep --version
+      - name: fixture compiles and its tests pass
+        working-directory: test/fixtures/vulnerable_app
+        run: |
+          mix deps.get
+          mix compile --warnings-as-errors
+          mix test
+      - name: scan fixture and assert expected findings
+        run: bash test/run.sh

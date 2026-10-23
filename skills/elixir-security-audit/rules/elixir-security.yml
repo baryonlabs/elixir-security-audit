@@ -1,0 +1,635 @@
+# elixir-security-audit — Semgrep/Opengrep rules for Elixir/Phoenix.
+#
+# Rule ids are the EXS pattern ids from docs/PLAN.md, lowercased
+# (EXS-ATOM-001 -> exs-atom-001). A few ids have a "-<variant>" companion
+# rule when one id needs two shapes (e.g. a different autofix); every rule
+# carries metadata.exs_id so consumers should key on that, not on check_id.
+#
+# ENGINE NOTE: Semgrep OSS (tested 1.182.1) skips `languages: [elixir]` rules
+# ("require Pro"). Use Opengrep (tested 1.32.0, OSS) or `semgrep --pro`.
+#
+# Autofix (`fix:`) exists only for ATOM-001, ATOM-002 and DESER-001. Every
+# fix must still be reviewed: String.to_existing_atom/1 and `keys: :atoms!`
+# raise on unknown atoms instead of creating them.
+
+rules:
+  # ---------------------------------------------------------------- ATOM
+  - id: exs-atom-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      Converting dynamic data to an atom with String.to_atom/1 can exhaust the atom table (atoms are never garbage
+      collected) and crash the VM. Map allowed values explicitly
+      (e.g. %{"asc" => :asc}) or use String.to_existing_atom/1 and handle
+      ArgumentError. Autofix uses to_existing_atom; verify the atom is
+      defined at compile time.
+    patterns:
+      - pattern: String.to_atom($X)
+      - pattern-not: String.to_atom("...")
+    fix: String.to_existing_atom($X)
+    metadata:
+      exs_id: EXS-ATOM-001
+      cwe: "CWE-400: Uncontrolled Resource Consumption"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/elixir/String.html#to_atom/1
+        - https://hexdocs.pm/sobelow/Sobelow.DOS.StringToAtom.html
+        - https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/atom_exhaustion
+
+  - id: exs-atom-001-list
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      List.to_atom/1 on dynamic data can exhaust the atom table. Map allowed
+      values explicitly or use List.to_existing_atom/1.
+    pattern: List.to_atom($X)
+    fix: List.to_existing_atom($X)
+    metadata:
+      exs_id: EXS-ATOM-001
+      cwe: "CWE-400: Uncontrolled Resource Consumption"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/elixir/List.html#to_atom/1
+        - https://hexdocs.pm/sobelow/Sobelow.DOS.ListToAtom.html
+
+  - id: exs-atom-002
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      Jason decoding with `keys: :atoms` creates a new atom for every unknown
+      JSON key, so untrusted input can exhaust the atom table. Use the
+      default string keys (`keys: :strings`) or `keys: :atoms!` (only
+      existing atoms; raises otherwise).
+    pattern-either:
+      - pattern: 'Jason.decode($X, ..., keys: :atoms, ...)'
+      - pattern: 'Jason.decode!($X, ..., keys: :atoms, ...)'
+    fix-regex:
+      regex: 'keys:\s*:atoms\b(?!!)'
+      replacement: 'keys: :atoms!'
+    metadata:
+      exs_id: EXS-ATOM-002
+      cwe: "CWE-400: Uncontrolled Resource Consumption"
+      category: security
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/jason/Jason.html#decode/2
+        - https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/atom_exhaustion
+
+  # ---------------------------------------------------------------- DESER
+  - id: exs-deser-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      :erlang.binary_to_term/1 on untrusted data can create atoms and
+      deserialize executable funs (remote code execution when the result
+      is invoked). Use Plug.Crypto.non_executable_binary_to_term(bin, [:safe]),
+      or better, a data format such as JSON.
+    pattern: ':erlang.binary_to_term($X)'
+    fix: Plug.Crypto.non_executable_binary_to_term($X, [:safe])
+    metadata:
+      exs_id: EXS-DESER-001
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/plug_crypto/Plug.Crypto.html#non_executable_binary_to_term/2
+        - https://www.erlang.org/doc/apps/erts/erlang.html#binary_to_term/2
+        - https://hexdocs.pm/sobelow/Sobelow.Misc.BinToTerm.html
+        - https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/serialisation
+
+  - id: exs-deser-001-opts
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      :erlang.binary_to_term/2 still deserializes executable funs even with
+      [:safe] (:safe only blocks new atoms). Use
+      Plug.Crypto.non_executable_binary_to_term(bin, [:safe]) for untrusted
+      data. Not autofixed: options other than :safe change the return value.
+    pattern: ':erlang.binary_to_term($X, $OPTS)'
+    metadata:
+      exs_id: EXS-DESER-001
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/plug_crypto/Plug.Crypto.html#non_executable_binary_to_term/2
+        - https://www.erlang.org/doc/apps/erts/erlang.html#binary_to_term/2
+        - https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/serialisation
+
+  # ---------------------------------------------------------------- RCE
+  - id: exs-rce-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      Evaluating code at runtime (Code.eval_*, EEx.eval_*) executes arbitrary
+      Elixir if any part of the input is attacker-controlled. Remove it and
+      redesign: parse into data and dispatch with pattern matching, or
+      precompile templates with EEx.function_from_file/5. No autofix — this
+      needs a design change.
+    patterns:
+      - pattern-either:
+          - pattern: Code.eval_string(...)
+          - pattern: Code.eval_quoted(...)
+          - pattern: Code.eval_file(...)
+          - pattern: EEx.eval_string(...)
+          - pattern: EEx.eval_file(...)
+      - pattern-not: Code.eval_string("...")
+      - pattern-not: Code.eval_string("...", ...)
+    metadata:
+      exs_id: EXS-RCE-001
+      cwe: "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/elixir/Code.html#eval_string/3
+        - https://hexdocs.pm/eex/EEx.html#eval_string/3
+        - https://hexdocs.pm/sobelow/Sobelow.RCE.CodeModule.html
+        - https://hexdocs.pm/sobelow/Sobelow.RCE.EEx.html
+
+  # ---------------------------------------------------------------- CMD
+  - id: exs-cmd-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      Running a command through a shell (:os.cmd/1, System.shell/1,
+      System.cmd("sh", ["-c", ...])) allows command injection via shell
+      metacharacters. Call the executable directly with System.cmd(exe, args)
+      — arguments are passed without a shell — and validate exe/args against
+      an allowlist. No autofix — argument splitting must be done by hand.
+    pattern-either:
+      - pattern: ':os.cmd(...)'
+      - pattern: System.shell(...)
+      - pattern: System.cmd("sh", ["-c", ...], ...)
+      - pattern: System.cmd("bash", ["-c", ...], ...)
+      - pattern: System.cmd("/bin/sh", ["-c", ...], ...)
+      - pattern: System.cmd("/bin/bash", ["-c", ...], ...)
+      - pattern: System.cmd("sh", ["-c", ...])
+      - pattern: System.cmd("bash", ["-c", ...])
+      - pattern: System.cmd("/bin/sh", ["-c", ...])
+      - pattern: System.cmd("/bin/bash", ["-c", ...])
+    metadata:
+      exs_id: EXS-CMD-001
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/elixir/System.html#cmd/3
+        - https://hexdocs.pm/elixir/System.html#shell/2
+        - https://hexdocs.pm/sobelow/Sobelow.CI.OS.html
+        - https://hexdocs.pm/sobelow/Sobelow.CI.System.html
+        - https://owasp.org/www-community/attacks/Command_Injection
+
+  # ---------------------------------------------------------------- SQLI
+  - id: exs-sqli-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      String interpolation inside an Ecto fragment/1 is inserted into the SQL
+      verbatim (SQL injection). Use placeholders and pinned values:
+      fragment("lower(?) = ?", u.name, ^value). No autofix — each
+      interpolation must become a `?` plus a pinned argument.
+    pattern-either:
+      - pattern: fragment("...#{...}...", ...)
+      - pattern: fragment("...#{...}...")
+    metadata:
+      exs_id: EXS-SQLI-001
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      category: security
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/ecto/Ecto.Query.API.html#fragment/1
+        - https://hexdocs.pm/sobelow/Sobelow.SQL.Query.html
+        - https://owasp.org/www-community/attacks/SQL_Injection
+
+  - id: exs-sqli-002
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      Raw SQL built with string interpolation is passed to Repo.query or
+      Ecto.Adapters.SQL.query (SQL injection). Use positional parameters:
+      Repo.query("... WHERE id = $1", [id]). No autofix — each interpolation
+      must become a parameter.
+    pattern-either:
+      - pattern: $REPO.query("...#{...}...", ...)
+      - pattern: $REPO.query!("...#{...}...", ...)
+      - pattern: Ecto.Adapters.SQL.query($REPO, "...#{...}...", ...)
+      - pattern: Ecto.Adapters.SQL.query!($REPO, "...#{...}...", ...)
+      - patterns:
+          - pattern-inside: |
+              $SQL = "...#{...}..."
+              ...
+          - pattern-either:
+              - pattern: $REPO.query($SQL, ...)
+              - pattern: $REPO.query!($SQL, ...)
+              - pattern: Ecto.Adapters.SQL.query($REPO, $SQL, ...)
+              - pattern: Ecto.Adapters.SQL.query!($REPO, $SQL, ...)
+    metadata:
+      exs_id: EXS-SQLI-002
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      category: security
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/ecto_sql/Ecto.Adapters.SQL.html#query/4
+        - https://hexdocs.pm/sobelow/Sobelow.SQL.Query.html
+        - https://owasp.org/www-community/attacks/SQL_Injection
+
+  # ---------------------------------------------------------------- XSS
+  # Covers .ex/.exs (render functions, ~H in modules, helpers). HEEx/EEx
+  # templates are not parsed by the Elixir grammar; exs-xss-001-template is
+  # a regex fallback for *.heex / *.eex files.
+  - id: exs-xss-001
+    languages: [elixir]
+    severity: WARNING
+    message: >-
+      raw/1 marks content as safe HTML and disables Phoenix's escaping; if
+      any part is user-controlled this is XSS. Remove raw/1 and let the
+      template escape, or sanitize first (e.g. HtmlSanitizeEx.basic_html/1)
+      and document why it is safe.
+    pattern-either:
+      - pattern: raw($X)
+      - pattern: Phoenix.HTML.raw($X)
+    metadata:
+      exs_id: EXS-XSS-001
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      category: security
+      confidence: LOW
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/phoenix_html/Phoenix.HTML.html#raw/1
+        - https://hexdocs.pm/sobelow/Sobelow.XSS.Raw.html
+        - https://owasp.org/www-community/attacks/xss/
+
+  - id: exs-xss-001-template
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      raw/1 in a template disables HTML escaping (XSS if the value is
+      user-controlled). Remove it or sanitize first (HtmlSanitizeEx).
+      Regex-based: HEEx/EEx are not parsed by Semgrep/Opengrep.
+    paths:
+      include:
+        - "*.heex"
+        - "*.eex"
+        - "*.leex"
+    pattern-regex: '(?<![\w.])(Phoenix\.HTML\.)?raw\s*\('
+    metadata:
+      exs_id: EXS-XSS-001
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      category: security
+      confidence: LOW
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/phoenix_html/Phoenix.HTML.html#raw/1
+        - https://hexdocs.pm/sobelow/Sobelow.XSS.Raw.html
+
+  # ---------------------------------------------------------------- REDOS
+  - id: exs-redos-001
+    languages: [elixir]
+    severity: WARNING
+    message: >-
+      Compiling a regular expression from dynamic input allows ReDoS
+      (catastrophic backtracking) and regex injection. Use a fixed pattern,
+      escape user input with Regex.escape/1, and cap input length.
+    patterns:
+      - pattern-either:
+          - pattern: Regex.compile($X, ...)
+          - pattern: Regex.compile!($X, ...)
+          - pattern: Regex.compile($X)
+          - pattern: Regex.compile!($X)
+      - pattern-not: Regex.compile("...", ...)
+      - pattern-not: Regex.compile!("...", ...)
+      - pattern-not: Regex.compile("...")
+      - pattern-not: Regex.compile!("...")
+      - pattern-not: Regex.compile(Regex.escape(...), ...)
+      - pattern-not: Regex.compile!(Regex.escape(...), ...)
+      - pattern-not: Regex.compile(Regex.escape(...))
+      - pattern-not: Regex.compile!(Regex.escape(...))
+    metadata:
+      exs_id: EXS-REDOS-001
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"
+      category: security
+      confidence: LOW
+      likelihood: LOW
+      impact: MEDIUM
+      references:
+        - https://hexdocs.pm/elixir/Regex.html#compile/2
+        - https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS
+
+  # Regex fallback: the Elixir grammar does not expose sigil contents to
+  # patterns, so interpolation inside ~r is matched textually.
+  - id: exs-redos-001-sigil
+    languages: [elixir]
+    severity: WARNING
+    message: >-
+      Interpolating a value into a ~r regex sigil compiles dynamic input as a
+      pattern (ReDoS / regex injection). Wrap the value in Regex.escape/1
+      and cap input length.
+    # One alternative per sigil delimiter; an interpolation is ignored when
+    # it starts with Regex.escape(.
+    pattern-regex: '~r(?:/[^/\n]*?|\([^)\n]*?|\[[^\]\n]*?|\{[^}\n]*?|\|[^|\n]*?|"[^"\n]*?|<[^>\n]*?)#\{(?!\s*Regex\.escape\()'
+    metadata:
+      exs_id: EXS-REDOS-001
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"
+      category: security
+      confidence: LOW
+      likelihood: LOW
+      impact: MEDIUM
+      references:
+        - https://hexdocs.pm/elixir/Kernel.html#sigil_r/2
+        - https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS
+
+  # ---------------------------------------------------------------- PATH
+  - id: exs-path-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      Request input reaches a filesystem path (File.*, send_file,
+      send_download, Path.join) — path traversal (../) can read, write or
+      delete arbitrary files. Validate with Path.safe_relative/2 against a
+      fixed base directory (or keep only Path.basename/1) before use.
+    mode: taint
+    pattern-sources:
+      # Phoenix controller actions: def action(conn, params)
+      - patterns:
+          - pattern-inside: |
+              def $ACTION(conn, $PARAMS) do
+                ...
+              end
+          - focus-metavariable: $PARAMS
+      - patterns:
+          - pattern-inside: |
+              def $ACTION(conn, $PARAMS) when $GUARD do
+                ...
+              end
+          - focus-metavariable: $PARAMS
+      - pattern: conn.params
+      - pattern: conn.query_params
+      - pattern: conn.body_params
+      - pattern: conn.path_params
+      # LiveView callbacks
+      - patterns:
+          - pattern-inside: |
+              def handle_event($EVENT, $PARAMS, $SOCKET) do
+                ...
+              end
+          - focus-metavariable: $PARAMS
+      - patterns:
+          - pattern-inside: |
+              def handle_params($PARAMS, $URI, $SOCKET) do
+                ...
+              end
+          - focus-metavariable: $PARAMS
+      - patterns:
+          - pattern-inside: |
+              def mount($PARAMS, $SESSION, $SOCKET) do
+                ...
+              end
+          - focus-metavariable: $PARAMS
+      - pattern: $SOCKET.assigns
+    pattern-sanitizers:
+      - pattern: Path.safe_relative(...)
+      - pattern: Path.safe_relative_to(...)
+      - pattern: Path.basename(...)
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: File.read($P, ...)
+              - pattern: File.read!($P, ...)
+              - pattern: File.read($P)
+              - pattern: File.read!($P)
+              - pattern: File.write($P, ...)
+              - pattern: File.write!($P, ...)
+              - pattern: File.rm($P)
+              - pattern: File.rm!($P)
+              - pattern: File.rm_rf($P)
+              - pattern: File.rm_rf!($P)
+              - pattern: File.stream!($P, ...)
+              - pattern: File.stream!($P)
+              - pattern: File.open($P, ...)
+              - pattern: File.open!($P, ...)
+              - pattern: File.open($P)
+              - pattern: File.open!($P)
+              - pattern: File.cp($P, ...)
+              - pattern: File.cp!($P, ...)
+              - pattern: File.rename($P, ...)
+              - pattern: File.rename!($P, ...)
+              - pattern: File.ls($P)
+              - pattern: File.ls!($P)
+              - pattern: File.mkdir_p($P)
+              - pattern: File.mkdir_p!($P)
+              - pattern: send_file($CONN, $STATUS, $P, ...)
+              - pattern: send_file($CONN, $STATUS, $P)
+              - pattern: Plug.Conn.send_file($CONN, $STATUS, $P, ...)
+              - pattern: Plug.Conn.send_file($CONN, $STATUS, $P)
+              - pattern: send_download($CONN, {:file, $P}, ...)
+              - pattern: send_download($CONN, {:file, $P})
+          - focus-metavariable: $P
+      - patterns:
+          - pattern-either:
+              - pattern: Path.join($BASE, $P)
+              - pattern: Path.join([..., $P, ...])
+          - focus-metavariable: $P
+    metadata:
+      exs_id: EXS-PATH-001
+      cwe: "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/elixir/Path.html#safe_relative/2
+        - https://hexdocs.pm/sobelow/Sobelow.Traversal.FileModule.html
+        - https://hexdocs.pm/sobelow/Sobelow.Traversal.SendFile.html
+        - https://owasp.org/www-community/attacks/Path_Traversal
+
+  # Opengrep/Semgrep OSS taint is intraprocedural: a controller passing
+  # params to a context function (VulnApp.Files.read_upload(name)) is not
+  # seen by exs-path-001. This variant treats every function argument as a
+  # source, so it is noisier (LOW confidence) — triage by checking callers.
+  - id: exs-path-001-param
+    languages: [elixir]
+    severity: WARNING
+    message: >-
+      A function argument flows into a filesystem path (File.*, send_file).
+      If any caller passes request input, ../ sequences escape the intended
+      directory. Validate with Path.safe_relative/2 against a fixed base
+      directory (or keep only Path.basename/1) inside this function.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $F(..., $X, ...) do
+                    ...
+                  end
+              - pattern-inside: |
+                  def $F(..., $X, ...) when $G do
+                    ...
+                  end
+              - pattern-inside: |
+                  defp $F(..., $X, ...) do
+                    ...
+                  end
+              - pattern-inside: |
+                  defp $F(..., $X, ...) when $G do
+                    ...
+                  end
+              - pattern-inside: 'def $F(..., $X, ...), do: $BODY'
+              - pattern-inside: 'defp $F(..., $X, ...), do: $BODY'
+          # Already covered (with higher confidence) by exs-path-001.
+          - pattern-not-inside: |
+              def $A(conn, $P) do
+                ...
+              end
+          - pattern-not-inside: |
+              def $A(conn, $P) when $G do
+                ...
+              end
+          - pattern-not-inside: |
+              def handle_event($E, $P, $S) do
+                ...
+              end
+          - pattern-not-inside: |
+              def handle_params($P, $U, $S) do
+                ...
+              end
+          - pattern-not-inside: |
+              def mount($P, $SESSION, $S) do
+                ...
+              end
+          - focus-metavariable: $X
+    pattern-sanitizers:
+      - pattern: Path.safe_relative(...)
+      - pattern: Path.safe_relative_to(...)
+      - pattern: Path.basename(...)
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: File.read($P, ...)
+              - pattern: File.read!($P, ...)
+              - pattern: File.read($P)
+              - pattern: File.read!($P)
+              - pattern: File.write($P, ...)
+              - pattern: File.write!($P, ...)
+              - pattern: File.rm($P)
+              - pattern: File.rm!($P)
+              - pattern: File.rm_rf($P)
+              - pattern: File.rm_rf!($P)
+              - pattern: File.stream!($P, ...)
+              - pattern: File.stream!($P)
+              - pattern: File.open($P, ...)
+              - pattern: File.open!($P, ...)
+              - pattern: File.open($P)
+              - pattern: File.open!($P)
+              - pattern: File.cp($P, ...)
+              - pattern: File.cp!($P, ...)
+              - pattern: File.rename($P, ...)
+              - pattern: File.rename!($P, ...)
+              - pattern: File.ls($P)
+              - pattern: File.ls!($P)
+              - pattern: File.mkdir_p($P)
+              - pattern: File.mkdir_p!($P)
+              - pattern: send_file($CONN, $STATUS, $P, ...)
+              - pattern: send_file($CONN, $STATUS, $P)
+              - pattern: Plug.Conn.send_file($CONN, $STATUS, $P, ...)
+              - pattern: Plug.Conn.send_file($CONN, $STATUS, $P)
+              - pattern: send_download($CONN, {:file, $P}, ...)
+              - pattern: send_download($CONN, {:file, $P})
+          - focus-metavariable: $P
+    metadata:
+      exs_id: EXS-PATH-001
+      cwe: "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+      category: security
+      confidence: LOW
+      likelihood: LOW
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/elixir/Path.html#safe_relative/2
+        - https://hexdocs.pm/sobelow/Sobelow.Traversal.FileModule.html
+        - https://owasp.org/www-community/attacks/Path_Traversal
+
+  # ---------------------------------------------------------------- CFG
+  # dev.exs / test.exs legitimately hold throwaway secrets generated by
+  # `mix phx.new`; only shared/prod config is flagged.
+  - id: exs-cfg-001
+    languages: [elixir]
+    severity: ERROR
+    message: >-
+      secret_key_base is hardcoded in a committed config file (or as an env
+      fallback). Anyone with the repo can forge/decrypt session cookies.
+      Read it at boot in config/runtime.exs:
+      secret_key_base: System.fetch_env!("SECRET_KEY_BASE").
+    paths:
+      exclude:
+        - "**/dev.exs"
+        - "**/test.exs"
+    pattern-either:
+      - pattern: |
+          config $APP, $MOD, ..., secret_key_base: "...", ...
+      - pattern: |
+          config $APP, ..., secret_key_base: "...", ...
+      - pattern: |
+          config $APP, $MOD, ..., secret_key_base: $ENV || "...", ...
+      - pattern: |
+          config $APP, ..., secret_key_base: $ENV || "...", ...
+    metadata:
+      exs_id: EXS-CFG-001
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      category: security
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://hexdocs.pm/phoenix/deployment.html#handling-of-your-application-secrets
+        - https://hexdocs.pm/sobelow/Sobelow.Config.Secrets.html
+        - https://hexdocs.pm/elixir/System.html#fetch_env!/1
+
+  - id: exs-cfg-001-salt
+    languages: [elixir]
+    severity: WARNING
+    message: >-
+      signing_salt / encryption_salt literal in production config. Salts are
+      not secrets on their own, but together with a leaked secret_key_base
+      they allow cookie forgery; prefer configuring them in
+      config/runtime.exs from the environment.
+    paths:
+      include:
+        - "**/prod.exs"
+        - "**/runtime.exs"
+    pattern-either:
+      - pattern: |
+          config $APP, $MOD, ..., signing_salt: "...", ...
+      - pattern: |
+          config $APP, $MOD, ..., encryption_salt: "...", ...
+    metadata:
+      exs_id: EXS-CFG-001
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      category: security
+      confidence: LOW
+      likelihood: LOW
+      impact: MEDIUM
+      references:
+        - https://hexdocs.pm/plug/Plug.Session.COOKIE.html
+        - https://hexdocs.pm/phoenix/deployment.html#handling-of-your-application-secrets

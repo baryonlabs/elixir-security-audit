@@ -1,0 +1,4 @@
+/_build/
+/deps/
+/security-audit/
+erl_crash.dump

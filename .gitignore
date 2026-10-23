@@ -1,0 +1,8 @@
+_build/
+deps/
+security-audit/
+*.ez
+.elixir_ls/
+erl_crash.dump
+__pycache__/
+.DS_Store

@@ -1,0 +1,13 @@
+{
+  "name": "baryonlabs-elixir-security",
+  "owner": { "name": "Baryon Labs", "url": "https://github.com/baryonlabs" },
+  "plugins": [
+    {
+      "name": "elixir-security-audit",
+      "source": "./",
+      "description": "Elixir/Phoenix security audit & fix skill (Sobelow, mix_audit, hex.audit, OSV, Semgrep).",
+      "version": "0.1.0",
+      "category": "security"
+    }
+  ]
+}
