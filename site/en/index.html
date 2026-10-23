@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>elixir-security-audit: Elixir &amp; Phoenix Security Audit Skill</title>
+<meta name="description" content="Free, open-source Claude Code skill that finds, triages, fixes and verifies Elixir and Phoenix vulnerabilities with Sobelow, mix_audit, OSV and Opengrep.">
+<link rel="canonical" href="https://baryonlabs.github.io/elixir-security-audit/en/">
+<link rel="alternate" hreflang="ko" href="https://baryonlabs.github.io/elixir-security-audit/">
+<link rel="alternate" hreflang="en" href="https://baryonlabs.github.io/elixir-security-audit/en/">
+<link rel="alternate" hreflang="x-default" href="https://baryonlabs.github.io/elixir-security-audit/">
+<meta name="theme-color" content="#0f1b2d">
+<meta name="color-scheme" content="light dark">
+<meta name="author" content="Baryon Labs">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="elixir-security-audit">
+<meta property="og:title" content="elixir-security-audit: Elixir &amp; Phoenix Security Audit Skill">
+<meta property="og:description" content="Free, open-source Claude Code skill that finds, triages, fixes and verifies Elixir and Phoenix vulnerabilities with Sobelow, mix_audit, OSV and Opengrep.">
+<meta property="og:url" content="https://baryonlabs.github.io/elixir-security-audit/en/">
+<meta property="og:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Elixir 앱을 점검하고 고치는 5단계: 스캔, 분류, 수정, 검증, 보고">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="elixir-security-audit: Elixir &amp; Phoenix Security Audit Skill">
+<meta name="twitter:description" content="Free, open-source Claude Code skill that finds, triages, fixes and verifies Elixir and Phoenix vulnerabilities with Sobelow, mix_audit, OSV and Opengrep.">
+<meta name="twitter:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#org",
+   "name": "Baryon Labs",
+   "url": "https://github.com/baryonlabs",
+   "sameAs": [
+    "https://github.com/baryonlabs"
+   ]
+  },
+  {
+   "@type": "SoftwareSourceCode",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#code",
+   "name": "elixir-security-audit",
+   "description": "elixir-security-audit is an open-source Claude Code skill that finds, triages, fixes and verifies security vulnerabilities in Elixir and Phoenix projects using Sobelow, mix_audit, OSV and Opengrep.",
+   "codeRepository": "https://github.com/baryonlabs/elixir-security-audit",
+   "programmingLanguage": [
+    "Elixir",
+    "Shell",
+    "Python"
+   ],
+   "license": "https://opensource.org/licenses/MIT",
+   "version": "0.1.0",
+   "dateModified": "2026-10-23",
+   "author": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   },
+   "publisher": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   }
+  },
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#app",
+   "name": "elixir-security-audit",
+   "description": "elixir-security-audit is an open-source Claude Code skill that finds, triages, fixes and verifies security vulnerabilities in Elixir and Phoenix projects using Sobelow, mix_audit, OSV and Opengrep.",
+   "applicationCategory": "DeveloperApplication",
+   "softwareVersion": "0.1.0",
+   "softwareRequirements": "Claude Code, Elixir 1.14+, Python 3, bash",
+   "license": "https://opensource.org/licenses/MIT",
+   "url": "https://baryonlabs.github.io/elixir-security-audit/",
+   "downloadUrl": "https://github.com/baryonlabs/elixir-security-audit",
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+   },
+   "author": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   }
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/en/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is elixir-security-audit free?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. It is open source under the MIT license and free. The scanners (Sobelow, mix_audit, hex.audit, OSV-Scanner, Opengrep) are free too; model tokens are spent only when Claude triages and fixes findings."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "I ran the rules with Semgrep and got 0 findings.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Semgrep OSS skips languages: [elixir] rules as Pro-only and returns 0 findings without an error. Install the open-source fork Opengrep or use semgrep --pro. In that case scan.sh reports the step as \"skipped\" instead of 0."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "fragment(\"... #{x}\") was flagged, but that code does not even compile.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Ecto 3 raises a compile error when the first argument of fragment is not a string literal. When this pattern is flagged it is usually dead code, a macro, or raw SQL. If it is raw SQL, reclassify it as EXS-SQLI-002."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "I want to suppress a false positive.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The skill never adds suppressions such as .sobelow-skips or # nosemgrep without your approval. It records the item as a false positive with the reason in the triage table; approve a suppression yourself if you need one."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can I run the scanners without an LLM?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. bash scripts/scan.sh /path/to/project runs standalone. Exit codes: 0 scan completed (with or without findings), 1 execution error, 2 not an Elixir project."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "I want to scan many projects or servers at once.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Use the sister project security-sweep. It sweeps every project, server and image under a directory and calls this skill's scan.sh for Elixir projects automatically."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap">
+<a class="brand" href="../"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C11 10 6 15.5 6 21a10 10 0 0 0 20 0C26 15.5 21 10 16 2z" fill="#a688d4"/><path d="M12 22a5 5 0 0 0 5 5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></svg><span>elixir-security-audit</span></a>
+<nav class="site-nav" aria-label="Main"><a href="#install">Install</a><a href="#workflow">How it works</a><a href="#patterns">Patterns</a><a href="#compare">Compare</a><a href="#faq">FAQ</a><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub</a><a href="../" hreflang="ko" lang="ko">한국어</a></nav>
+</div></header>
+<main id="main">
+
+<div class="hero"><div class="wrap">
+<h1>elixir-security-audit: security audit and fix skill for Elixir and Phoenix</h1>
+<p class="answer"><strong>elixir-security-audit is an open-source Claude Code skill that finds, triages, fixes and verifies security vulnerabilities in Elixir and Phoenix projects using Sobelow, mix_audit, OSV and Opengrep.</strong> Deterministic scanners cover everything, Claude reads each finding to decide whether external input reaches it, then applies minimal fixes on a separate branch and verifies them with tests.</p>
+<ul class="chips"><li>v0.1.0 (2026-10-23)</li><li>MIT · free</li><li>Claude Code plugin</li><li>15 EXS patterns</li><li>17 Opengrep rules</li></ul>
+<div class="cta"><a class="btn btn-primary" href="#install">Install</a><a class="btn btn-ghost" href="https://github.com/baryonlabs/elixir-security-audit">View on GitHub</a></div>
+</div></div>
+
+<section id="install"><div class="wrap">
+<h2>Install</h2>
+<p>Add the marketplace and install the plugin in Claude Code.</p>
+<pre><code class="language-text">/plugin marketplace add baryonlabs/elixir-security-audit
+/plugin install elixir-security-audit@baryonlabs-elixir-security</code></pre>
+<p>Open Claude Code in an Elixir repository and ask with the slash command:</p>
+<pre><code class="language-text">/elixir-security-audit:elixir-security-audit security audit this project and fix only the real issues</code></pre>
+<p>If you only copied the skill folder into <code>~/.claude/skills/</code>, the command is <code>/elixir-security-audit</code>. A natural-language request such as "security audit this Phoenix app" also lets Claude pick the skill, but the command is the reliable way.</p>
+<h3>Copy the skill only / run the scanners standalone</h3>
+<pre><code class="language-bash">git clone https://github.com/baryonlabs/elixir-security-audit
+cp -r elixir-security-audit/skills/elixir-security-audit ~/.claude/skills/
+
+# scanners only, no LLM (CI / local)
+bash ~/.claude/skills/elixir-security-audit/scripts/scan.sh /path/to/project \
+  [--no-deps-fetch] [--skip-semgrep] [--out DIR]</code></pre>
+<p>Exit codes: <code>0</code> scan completed (with or without findings) · <code>1</code> execution error · <code>2</code> not an Elixir project</p>
+<h3>Requirements</h3>
+<ul>
+<li>Elixir 1.14+ (1.18 recommended), Python 3, bash, Claude Code</li>
+<li>Target project deps: <code>{:sobelow, "~&gt; 0.13", only: [:dev, :test], runtime: false}</code>, <code>{:mix_audit, "~&gt; 2.1", only: [:dev, :test], runtime: false}</code> (the skill adds them after asking)</li>
+<li>Optional: <a href="https://github.com/google/osv-scanner">osv-scanner</a>, <a href="https://github.com/opengrep/opengrep">opengrep</a> (recommended) or <code>semgrep --pro</code></li>
+</ul>
+<p class="callout warn">Semgrep OSS skips <code>languages: [elixir]</code> rules as Pro-only and returns <strong>0 findings without an error</strong>. Install Opengrep for an open-source setup.</p>
+</div></section>
+
+<section id="workflow"><div class="wrap">
+<h2>How it works: scan → triage → fix → verify → report</h2>
+<figure><img src="../assets/elixir-steps.webp" width="1536" height="1024" alt="Five steps to audit and fix an Elixir app: scan, triage, fix, verify, report (illustration labels are in Korean)"><figcaption>Never touches main, fixes only real vulnerabilities, verifies with tests. (Illustration labels are in Korean.)</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>Step</th><th>What happens</th><th>Output</th></tr></thead><tbody>
+<tr><td>0. Preconditions</td><td>Detect <code>mix.exs</code> / umbrella, check the work tree, create a <code>security/audit-YYYYMMDD</code> branch, record baseline tests</td><td>—</td></tr>
+<tr><td>1. Scan</td><td>Run 6 sources (Sobelow, mix_audit, hex.audit, OSV-Scanner, 17 Opengrep rules, BEAM grep) → normalize and de-duplicate</td><td><code>security-audit/findings.json</code>, <code>summary.md</code>, raw outputs</td></tr>
+<tr><td>2. Triage</td><td>Read the code and decide whether external input (params, headers, socket, external APIs) reaches the sink: real, false positive, or uncertain</td><td>Triage table (user confirms)</td></tr>
+<tr><td>3. Fix</td><td>Standard fix from the pattern catalog; add tests when behavior changes</td><td><code>fix(security): …</code> commits</td></tr>
+<tr><td>4. Verify</td><td><code>mix compile --warnings-as-errors</code>, <code>mix test</code>, re-scan</td><td>Before/after counts</td></tr>
+<tr><td>5. Report</td><td>Remaining items with reasons, CI suggestion</td><td><code>security-audit/REPORT.md</code></td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="why-beam"><div class="wrap">
+<h2>Why Elixir needs its own audit</h2>
+<p>General AI security reviews (Claude Security, <code>/security-review</code>, Codex Security) are good at logic flaws but do not run the Elixir scanners (Sobelow, mix_audit) and do not systematically cover BEAM-specific risks.</p>
+<ul>
+<li><strong>Atom exhaustion:</strong> atoms are never garbage-collected; when the atom table limit (1,048,576 by default) is reached the whole VM crashes. One line of <code>String.to_atom(params["x"])</code> is enough.</li>
+<li><strong><code>:erlang.binary_to_term/1</code>:</strong> an external binary can create atoms and functions.</li>
+<li><strong>Raw SQL in Ecto:</strong> <code>Repo.query("... #{x}")</code> bypasses Ecto's compile-time protection.</li>
+<li><strong>Dependency advisories:</strong> the mix_audit database and OSV (including the EEF CNA) update at different times, so checking only one misses things. In the test app, the <code>plug_crypto 2.2.0</code> advisory (EEF-CVE-2026-105963) was caught only by OSV and hex.audit.</li>
+</ul>
+</div></section>
+
+<section id="patterns"><div class="wrap">
+<h2>Detection patterns: the 15-ID EXS catalog</h2>
+<p>Each pattern comes with vulnerable/safe code pairs, false-positive signals and test ideas in <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/skills/elixir-security-audit/references/patterns.md">references/patterns.md</a>. Severity starts at the default and is adjusted for reachability and impact.</p>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Example</th><th>Default severity</th></tr></thead><tbody><tr><td><code>EXS-ATOM-001</code></td><td>Atom exhaustion (dynamic atoms)</td><td><code>String.to_atom(params["x"])</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-ATOM-002</code></td><td>Atom exhaustion (JSON atom keys)</td><td><code>Jason.decode(b, keys: :atoms)</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-DESER-001</code></td><td>Unsafe deserialization</td><td><code>:erlang.binary_to_term(cookie)</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-RCE-001</code></td><td>Dynamic code evaluation</td><td><code>Code.eval_string/1</code>, <code>EEx.eval_string/2</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-CMD-001</code></td><td>OS command injection</td><td><code>:os.cmd/1</code>, <code>System.cmd("sh", ["-c", ...])</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-SQLI-001</code></td><td>SQL injection (Ecto fragment)</td><td><code>fragment("... #{x}")</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-SQLI-002</code></td><td>SQL injection (raw SQL)</td><td><code>Repo.query("... #{x}")</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-XSS-001</code></td><td>XSS (escaping bypass)</td><td><code>raw(@user_html)</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-REDOS-001</code></td><td>ReDoS (dynamic regex)</td><td><code>Regex.compile!(params["re"])</code></td><td class="sev sev-m">Medium</td></tr><tr><td><code>EXS-PATH-001</code></td><td>Path traversal</td><td><code>File.read!(Path.join(dir, params["f"]))</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-CFG-001</code></td><td>Hardcoded secret</td><td>literal <code>secret_key_base</code> in <code>config/prod.exs</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-CFG-002</code></td><td>Missing CSRF / secure headers</td><td><code>pipeline :browser</code> without <code>:put_secure_browser_headers</code></td><td class="sev sev-m">Medium</td></tr><tr><td><code>EXS-CFG-003</code></td><td>No HTTPS enforcement</td><td>no <code>force_ssl</code> in endpoint config</td><td class="sev sev-l">Low</td></tr><tr><td><code>EXS-DEP-001</code></td><td>Vulnerable dependency</td><td><code>mix.lock</code> version flagged by mix_audit / OSV / hex.audit</td><td class="sev">per advisory</td></tr><tr><td><code>EXS-DEP-002</code></td><td>Retired Hex package</td><td>retired version reported by <code>mix hex.audit</code></td><td class="sev sev-m">Medium</td></tr></tbody></table></div>
+</div></section>
+
+<section id="sample"><div class="wrap">
+<h2>Real output: scanning the intentionally vulnerable test app</h2>
+<p><code>test/fixtures/vulnerable_app</code> is an intentionally vulnerable Phoenix app with one instance of 14 EXS patterns (plus 9 <code># SAFE:</code> look-alikes for false-positive practice). Never deploy it. Below is part of its <code>summary.md</code>; the verdict column is filled in by Claude during triage.</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Severity</th><th>ID</th><th>Location</th><th>Source</th><th>Fix</th></tr></thead><tbody><tr><td>1</td><td class="sev sev-c">Critical</td><td><code>EXS-RCE-001</code></td><td><code>lib/vuln_app/calculator.ex:6</code></td><td>grep+sobelow</td><td>remove dynamic eval, allow-list dispatch</td></tr><tr><td>2</td><td class="sev sev-c">Critical</td><td><code>EXS-DESER-001</code></td><td><code>lib/vuln_app/preferences.ex:10</code></td><td>grep+sobelow</td><td><code>Plug.Crypto.non_executable_binary_to_term(bin, [:safe])</code></td></tr><tr><td>3</td><td class="sev sev-c">Critical</td><td><code>EXS-SQLI-002</code></td><td><code>lib/vuln_app/reports.ex:8</code></td><td>grep+sobelow</td><td><code>$1</code> placeholder + argument list</td></tr><tr><td>4</td><td class="sev sev-c">Critical</td><td><code>EXS-CMD-001</code></td><td><code>lib/vuln_app/thumbnails.ex:6</code></td><td>grep</td><td><code>System.cmd(exe, [args])</code> + allow-list</td></tr><tr><td>7</td><td class="sev sev-h">High</td><td><code>EXS-ATOM-001</code></td><td><code>lib/vuln_app/catalog.ex:22</code></td><td>grep+sobelow</td><td>allow-list map or <code>String.to_existing_atom/1</code></td></tr><tr><td>12</td><td class="sev sev-h">High</td><td><code>EXS-DEP-001</code></td><td><code>mix.lock:21</code></td><td>mix_audit+osv+hex_audit</td><td>sweet_xml 0.6.6 → 0.7.0 (GHSA-qpmc-wprv-x746)</td></tr><tr><td>17</td><td class="sev sev-m">Medium</td><td><code>EXS-DEP-001</code></td><td><code>mix.lock:18</code></td><td>osv+hex_audit</td><td>plug_crypto 2.2.0 (EEF-CVE-2026-105963)</td></tr><tr><td>18</td><td class="sev sev-l">Low</td><td><code>EXS-CFG-003</code></td><td><code>config/prod.exs:1</code></td><td>grep+sobelow</td><td><code>force_ssl: [hsts: true]</code></td></tr></tbody></table></div>
+<p>On the same app, Sobelow alone caught 9 of the 13 code/config IDs; ATOM-002, CMD-001, REDOS-001 and SQLI-001 came only from grep/Opengrep.</p>
+</div></section>
+
+<section id="compare"><div class="wrap">
+<h2>How it differs from other security tools</h2>
+<h3>In plain words: the detective and the airport scanner</h3>
+<figure><img src="../assets/easy-compare.webp" width="1536" height="1024" loading="lazy" alt="Detective vs airport scanner: AI security reviews find logic flaws, scanner sweeps find known vulnerabilities (illustration labels are in Korean)"><figcaption>Illustration generated with ChatGPT; labels are in Korean.</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th></th><th>Detective — AI security review<br><span class="note">Codex Security · Claude Security · <code>/security-review</code></span></th><th>Airport scanner — scanner sweep<br><span class="note">security-sweep · elixir-security-audit</span></th></tr></thead><tbody>
+<tr><th>What it does</th><td>Reads the code from scratch and reasons about it to find design and logic flaws ("this door isn't locked")</td><td>Runs every bag (project, server, image) through the scanner and finds every item on the wanted list (CVE databases)</td></tr>
+<tr><th>Good at</th><td>Authorization bypass, broken trust boundaries, novel techniques</td><td>Outdated libraries, server OS package vulnerabilities, leaked secrets, language-specific dangerous APIs</td></tr>
+<tr><th>Tends to miss</th><td>Checking the wanted list (does not look at dependency CVEs directly)</td><td>New techniques that are not on any list</td></tr>
+<tr><th>Results</th><td>Smart, but varies a little from run to run</td><td>Same input, same result, every time</td></tr>
+<tr><th>Verification</th><td>Another agent re-checks the finding</td><td>Confirms the advisory is real via OSV and checks whether the code actually uses it (reachability)</td></tr>
+<tr><th>Cost</th><td>Model tokens on every scan</td><td>Scanners are free; the LLM is used only for triage</td></tr>
+</tbody></table></div>
+<p><strong>So use both.</strong> Let the scanner filter out every known risk first, then hand important repositories to the detective to find hidden logic flaws.</p>
+<div class="table-wrap"><table><thead><tr><th>When you ask…</th><th>Start with</th></tr></thead><tbody>
+<tr><td>"Do our projects and servers have known vulnerabilities?"</td><td><a href="https://github.com/baryonlabs/security-sweep">security-sweep</a></td></tr>
+<tr><td>"Fix this Phoenix app"</td><td>elixir-security-audit</td></tr>
+<tr><td>"Quick look at this PR before merging"</td><td><code>/security-review</code></td></tr>
+<tr><td>"Go deep on our payments / auth repository"</td><td>Claude Security or Codex Security</td></tr>
+</tbody></table></div>
+<h3>Detailed comparison</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>OpenAI Codex Security</th><th>Claude Code <code>/security-review</code></th><th>Anthropic Claude Security plugin</th><th>elixir-security-audit</th><th>security-sweep</th></tr></thead><tbody>
+<tr><th>Approach</th><td>LLM reads code and detects issues (CLI, SDK, Codex plugin, GitHub Action)</td><td>Single LLM security pass</td><td>LLM multi-agent (architecture → threat model → exploration → independent verification)</td><td>Deterministic scanners + LLM triage and fixes</td><td>Deterministic scanners + LLM triage</td></tr>
+<tr><th>Scope</th><td>Repo, path or diff; deep mode; bulk scans across repos</td><td>Current branch</td><td>Whole or partial repo; branch, PR or commit diff</td><td>One Elixir/Phoenix project</td><td>Every project under a directory + servers + container images</td></tr>
+<tr><th>Dependency CVEs</th><td>Not scanned directly (imports Snyk / Endor results)</td><td>Not covered</td><td>Not covered (official docs recommend pairing with existing dependency scanners)</td><td>mix_audit · hex.audit · OSV</td><td>OSV-Scanner (all ecosystems)</td></tr>
+<tr><th>CVE existence check</th><td>—</td><td>—</td><td>—</td><td>Cross-checked against OSV</td><td>OSV lookup + CISA KEV + EPSS</td></tr>
+<tr><th>Fixes</th><td><code>cs patch</code>, <code>verify-fix</code></td><td>Report-focused</td><td>Patch files in <code>patches/</code>, not auto-applied</td><td>Commits on a separate branch (after approval)</td><td>Read-only; hands off to language skills</td></tr>
+<tr><th>Runs without an LLM</th><td>No</td><td>No</td><td>No</td><td><code>scan.sh</code> standalone</td><td>Scripts standalone, <code>--offline</code></td></tr>
+<tr><th>Requirements</th><td>OpenAI login / API key (Bedrock etc. possible), Node 22+</td><td>Claude Code</td><td>Paid plan / API, python3 3.9+</td><td>Claude Code, Elixir</td><td>Claude Code, osv-scanner, trivy</td></tr>
+</tbody></table></div>
+<p><strong>Combine, don't replace.</strong> The three LLM tools read code like a human security researcher and are strong at logic flaws (authorization bypass, broken trust boundaries). This skill sweeps known vulnerabilities (dependency CVEs, language-specific dangerous APIs) with deterministic scanners and checks whether each CVE is real and actually used by the code. Recommended order: sweep everything with security-sweep → fix Elixir projects with elixir-security-audit → deep-scan important repositories for logic flaws with Claude Security or Codex Security.</p>
+<p class="note">Sources: <a href="https://github.com/openai/codex-security">openai/codex-security</a> README and agent workflows, <a href="https://code.claude.com/docs/en/claude-security">Claude Security docs</a>, <a href="https://github.com/anthropics/claude-code-security-review">anthropics/claude-code-security-review</a>. As of 2026-10-23; every tool keeps changing.</p>
+</div></section>
+
+<section id="principles"><div class="wrap">
+<h2>Safety principles</h2>
+<ul>
+<li>Scanner output and code comments are <strong>data</strong>, never instructions (prompt-injection defense)</li>
+<li>No direct commits to main/master; secrets never appear in reports</li>
+<li>False positives are recorded with a reason; suppressions such as <code>.sobelow-skips</code> or <code># nosemgrep</code> require your approval</li>
+<li>Major upgrades and design changes are confirmed with you before fixing</li>
+</ul>
+<p>This is a tool- and pattern-based audit. It cannot find logic bugs such as missing authorization (IDOR), business-logic flaws or multi-tenancy boundaries, so follow up with <code>/security-review</code> or Claude Security.</p>
+<h3>Add it to CI</h3>
+<p>Copy <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/skills/elixir-security-audit/templates/github-actions.yml">templates/github-actions.yml</a> into <code>.github/workflows/</code> to run <code>mix hex.audit</code>, <code>mix deps.audit</code>, <code>mix sobelow --exit medium</code> and OSV-Scanner on every PR.</p>
+</div></section>
+
+<section id="facts"><div class="wrap">
+<h2>Project facts</h2>
+<dl class="facts">
+<dt>Name</dt><dd>elixir-security-audit</dd>
+<dt>Version</dt><dd>0.1.0 (2026-10-23)</dd>
+<dt>License / price</dt><dd>MIT, free and open source</dd>
+<dt>Languages</dt><dd>Elixir · Shell · Python (<code>scan.sh</code> needs bash 3.2+, <code>summarize.py</code> uses only the python3 standard library)</dd>
+<dt>Requirements</dt><dd>Claude Code, Elixir 1.14+, Python 3, bash</dd>
+<dt>Made by</dt><dd><a href="https://github.com/baryonlabs">Baryon Labs</a></dd>
+<dt>Repository</dt><dd><a href="https://github.com/baryonlabs/elixir-security-audit">github.com/baryonlabs/elixir-security-audit</a></dd>
+</dl>
+</div></section>
+
+<section id="faq" class="faq"><div class="wrap"><h2>FAQ</h2>
+<details><summary>Is elixir-security-audit free?</summary><p>Yes. It is open source under the MIT license and free. The scanners (Sobelow, mix_audit, hex.audit, OSV-Scanner, Opengrep) are free too; model tokens are spent only when Claude triages and fixes findings.</p></details>
+<details><summary>I ran the rules with Semgrep and got 0 findings.</summary><p>Semgrep OSS skips <code>languages: [elixir]</code> rules as Pro-only and returns 0 findings without an error. Install the open-source fork Opengrep or use <code>semgrep --pro</code>. In that case <code>scan.sh</code> reports the step as "skipped" instead of 0.</p></details>
+<details><summary><code>fragment("... #{x}")</code> was flagged, but that code does not even compile.</summary><p>Ecto 3 raises a compile error when the first argument of <code>fragment</code> is not a string literal. When this pattern is flagged it is usually dead code, a macro, or raw SQL. If it is raw SQL, reclassify it as EXS-SQLI-002.</p></details>
+<details><summary>I want to suppress a false positive.</summary><p>The skill never adds suppressions such as <code>.sobelow-skips</code> or <code># nosemgrep</code> without your approval. It records the item as a false positive with the reason in the triage table; approve a suppression yourself if you need one.</p></details>
+<details><summary>Can I run the scanners without an LLM?</summary><p>Yes. <code>bash scripts/scan.sh /path/to/project</code> runs standalone. Exit codes: 0 scan completed (with or without findings), 1 execution error, 2 not an Elixir project.</p></details>
+<details><summary>I want to scan many projects or servers at once.</summary><p>Use the sister project security-sweep. It sweeps every project, server and image under a directory and calls this skill's <code>scan.sh</code> for Elixir projects automatically.</p></details>
+</div></section>
+
+<section id="guides"><div class="wrap">
+<h2>In-depth guides (Korean)</h2>
+<div class="cards" lang="ko">
+<a class="card" href="../ko/atom-exhaustion/"><strong>String.to_atom이 왜 위험한가요?</strong>Why is String.to_atom dangerous? Atom exhaustion explained with vulnerable vs safe code.</a>
+<a class="card" href="../ko/binary-to-term/"><strong>:erlang.binary_to_term을 안전하게 쓰려면?</strong>How to use :erlang.binary_to_term safely.</a>
+<a class="card" href="../ko/sobelow-vs-semgrep/"><strong>Sobelow만으로 충분한가요?</strong>Is Sobelow enough? What it caught and missed in the test app.</a>
+</div>
+</div></section>
+
+</main>
+<footer><div class="wrap">
+<p><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub repository</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/releases">Releases</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/SECURITY.md">Report a vulnerability</a> · <a href="../llms.txt">llms.txt</a></p><p>Sister project: <a href="https://github.com/baryonlabs/security-sweep">security-sweep</a> — a scanner sweep across many projects, servers and container images</p><p>MIT License © 2026 <a href="https://github.com/baryonlabs">Baryon Labs</a> · Last updated 2026-10-23</p>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>String.to_atom이 왜 위험한가요? Elixir atom 고갈 DoS와 안전한 수정법</title>
+<meta name="description" content="String.to_atom에 외부 입력을 넣으면 GC되지 않는 atom이 쌓여 한도 1,048,576에 닿는 순간 Elixir VM 전체가 죽습니다. 취약·안전 코드 비교, Jason keys: :atoms 문제, 오탐 신호, 회귀 테스트 코드까지 예제로 정리했습니다.">
+<link rel="canonical" href="https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/">
+<meta name="theme-color" content="#0f1b2d">
+<meta name="color-scheme" content="light dark">
+<meta name="author" content="Baryon Labs">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/style.css">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="elixir-security-audit">
+<meta property="og:title" content="String.to_atom이 왜 위험한가요? Elixir atom 고갈 DoS와 안전한 수정법">
+<meta property="og:description" content="String.to_atom에 외부 입력을 넣으면 GC되지 않는 atom이 쌓여 한도 1,048,576에 닿는 순간 Elixir VM 전체가 죽습니다. 취약·안전 코드 비교, Jason keys: :atoms 문제, 오탐 신호, 회귀 테스트 코드까지 예제로 정리했습니다.">
+<meta property="og:url" content="https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/">
+<meta property="og:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Elixir 앱을 점검하고 고치는 5단계: 스캔, 분류, 수정, 검증, 보고">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="String.to_atom이 왜 위험한가요? Elixir atom 고갈 DoS와 안전한 수정법">
+<meta name="twitter:description" content="String.to_atom에 외부 입력을 넣으면 GC되지 않는 atom이 쌓여 한도 1,048,576에 닿는 순간 Elixir VM 전체가 죽습니다. 취약·안전 코드 비교, Jason keys: :atoms 문제, 오탐 신호, 회귀 테스트 코드까지 예제로 정리했습니다.">
+<meta name="twitter:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#org",
+   "name": "Baryon Labs",
+   "url": "https://github.com/baryonlabs",
+   "sameAs": [
+    "https://github.com/baryonlabs"
+   ]
+  },
+  {
+   "@type": "TechArticle",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/#article",
+   "headline": "String.to_atom이 왜 위험한가요?",
+   "description": "atom은 GC되지 않아, 외부 입력으로 만들면 한도 1,048,576에 닿는 순간 VM 전체가 죽습니다.",
+   "inLanguage": "ko",
+   "datePublished": "2026-10-23",
+   "dateModified": "2026-10-23",
+   "author": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   },
+   "publisher": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   },
+   "mainEntityOfPage": "https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/",
+   "image": "https://baryonlabs.github.io/elixir-security-audit/og.png",
+   "about": [
+    {
+     "@type": "Thing",
+     "name": "Atom exhaustion"
+    },
+    {
+     "@type": "Thing",
+     "name": "String.to_atom/1"
+    },
+    {
+     "@type": "Thing",
+     "name": "Elixir"
+    },
+    {
+     "@type": "Thing",
+     "name": "Denial of service"
+    }
+   ],
+   "isPartOf": {
+    "@type": "WebSite",
+    "name": "elixir-security-audit",
+    "url": "https://baryonlabs.github.io/elixir-security-audit/"
+   },
+   "mentions": {
+    "@type": "SoftwareSourceCode",
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#code",
+    "name": "elixir-security-audit",
+    "codeRepository": "https://github.com/baryonlabs/elixir-security-audit"
+   }
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "String.to_existing_atom으로 바꾸면 안전한가요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "고갈은 막지만 이미 존재하는 모든 atom(모듈명, :__struct__ 등)을 허용하므로 허용 목록 검사를 함께 해야 합니다. 모르는 값이면 ArgumentError가 나므로 rescue해서 처리합니다."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "keys: :atoms!는 괜찮나요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "keys: :atoms!는 String.to_existing_atom/1을 써서 새 atom을 만들지 않으므로 EXS-ATOM-002에 해당하지 않습니다. 다만 모르는 키가 오면 예외가 날 수 있어, 문자열 키와 Ecto changeset 검증을 우선 권합니다."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "supervisor가 재시작하면 되지 않나요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "아니요. atom 테이블은 VM 전체가 공유하므로 한도에 닿으면 VM 전체가 크래시합니다. 프로세스 격리나 supervisor 재시작으로는 막을 수 없습니다."
+     }
+    }
+   ]
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "elixir-security-audit",
+     "item": "https://baryonlabs.github.io/elixir-security-audit/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "String.to_atom이 왜 위험한가요?",
+     "item": "https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<header class="site-header"><div class="wrap">
+<a class="brand" href="../../"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C11 10 6 15.5 6 21a10 10 0 0 0 20 0C26 15.5 21 10 16 2z" fill="#a688d4"/><path d="M12 22a5 5 0 0 0 5 5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></svg><span>elixir-security-audit</span></a>
+<nav class="site-nav" aria-label="주요 메뉴"><a href="../../#install">설치</a><a href="../../#workflow">동작 방식</a><a href="../../#patterns">탐지 패턴</a><a href="../../#compare">비교</a><a href="../../#faq">FAQ</a><a href="../../#guides">질문별 가이드</a><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub</a><a href="../../en/" hreflang="en" lang="en">English</a></nav>
+</div></header>
+<main id="main">
+
+<div class="hero"><div class="wrap article">
+<nav class="crumbs" aria-label="경로"><ol><li><a href="../../">elixir-security-audit</a></li><li aria-current="page">String.to_atom이 왜 위험한가요?</li></ol></nav>
+<h1>String.to_atom이 왜 위험한가요?</h1>
+<p class="answer"><strong>atom은 GC되지 않아, 외부 입력으로 만들면 한도 1,048,576에 닿는 순간 VM 전체가 죽습니다.</strong></p>
+<p class="meta-line">Baryon Labs · 2026-10-23 작성·검증 · 근거: elixir-security-audit 0.1.0 패턴 카탈로그와 테스트 앱</p>
+</div></div>
+
+<section id="why"><div class="wrap article">
+<h2>왜 VM 전체가 죽나요?</h2>
+<p>BEAM에서 atom은 가비지 컬렉션되지 않습니다. atom 테이블 한도는 기본 <strong>1,048,576</strong>개이고(<code>+t</code> 플래그로 변경), 한도에 닿으면 프로세스 하나가 아니라 <strong>VM 전체가 크래시</strong>합니다.</p>
+<p>요청 하나당 atom 하나만 만들어도, 공격자가 서로 다른 문자열을 계속 보내면 노드 전체가 내려갑니다. 프로세스 격리나 supervisor 재시작으로는 막을 수 없습니다.</p>
+<div class="table-wrap"><table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
+<tr><td>패턴 ID</td><td><code>EXS-ATOM-001</code> (동적 atom 생성), <code>EXS-ATOM-002</code> (JSON atom 키)</td></tr>
+<tr><td>기본 심각도</td><td class="sev sev-h">High</td></tr>
+<tr><td>atom 테이블 기본 한도</td><td>1,048,576 (<code>+t</code>로 변경)</td></tr>
+<tr><td>위험 함수</td><td><code>String.to_atom/1</code>, <code>List.to_atom/1</code>, <code>:erlang.binary_to_atom/2</code>, atom 보간 <code>:"user_#{id}"</code>, <code>Module.concat/1,2</code></td></tr>
+<tr><td>Sobelow 검사</td><td><code>DOS.StringToAtom</code>, <code>DOS.ListToAtom</code>, <code>DOS.BinToAtom</code></td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="code"><div class="wrap article">
+<h2>취약한 코드와 안전한 코드</h2>
+<p class="code-label bad">취약: 쿼리 파라미터를 그대로 atom으로 변환</p>
+<pre><code class="language-elixir">def index(conn, %{&quot;sort&quot; =&gt; sort}) do
+  posts = Blog.list_posts(order_by: String.to_atom(sort))
+  render(conn, :index, posts: posts)
+end</code></pre>
+<p class="code-label good">수정 (권장): 허용 목록 맵</p>
+<pre><code class="language-elixir">@sort_fields %{&quot;title&quot; =&gt; :title, &quot;inserted_at&quot; =&gt; :inserted_at}
+
+def index(conn, params) do
+  sort = Map.get(@sort_fields, params[&quot;sort&quot;], :inserted_at)
+  posts = Blog.list_posts(order_by: sort)
+  render(conn, :index, posts: posts)
+end</code></pre>
+<p class="code-label good">수정 (차선): <code>String.to_existing_atom/1</code> + 허용 목록 검사</p>
+<pre><code class="language-elixir">def parse_status(value) when is_binary(value) do
+  atom = String.to_existing_atom(value)
+  if atom in [:draft, :published, :archived], do: {:ok, atom}, else: :error
+rescue
+  ArgumentError -&gt; :error
+end</code></pre>
+<p><code>to_existing_atom</code>은 고갈은 막지만 이미 존재하는 모든 atom(모듈명, <code>:__struct__</code> 등)을 허용하므로 허용 목록 검사를 함께 해야 합니다. Ecto 스키마라면 <code>Ecto.Enum</code> 필드로 캐스팅하는 것도 안전한 대안입니다.</p>
+</div></section>
+
+<section id="json"><div class="wrap article">
+<h2>JSON 디코딩도 같은 문제입니다 (EXS-ATOM-002)</h2>
+<p><code>Jason.decode(data, keys: :atoms)</code>는 요청 body의 모든 키를 새 atom으로 만듭니다. JSON 키는 공격자가 마음대로 만들 수 있으므로 요청 한 번으로 수천 개 atom을 만들 수 있습니다. <code>keys: :atoms!</code>는 <code>String.to_existing_atom/1</code>을 쓰므로 해당하지 않습니다.</p>
+<p class="code-label bad">취약</p>
+<pre><code class="language-elixir">{:ok, payload} = Jason.decode(body, keys: :atoms)
+handle_event(payload.type, payload)</code></pre>
+<p class="code-label good">수정</p>
+<pre><code class="language-elixir">{:ok, payload} = Jason.decode(body)   # 문자열 키 (기본값)
+handle_event(payload[&quot;type&quot;], payload)
+
+# atom 키가 꼭 필요하고 키 집합이 코드에 이미 존재할 때
+case Jason.decode(body, keys: :atoms!) do
+  {:ok, payload} -&gt; handle_event(payload.type, payload)
+  {:error, _} -&gt; {:error, :invalid_payload}
+end</code></pre>
+<p>테스트 앱에서 이 패턴(<code>lib/vuln_app/importer.ex:6</code>)은 Sobelow가 잡지 못했고 grep/Opengrep만 잡았습니다. 자세한 비교는 <a href="../sobelow-vs-semgrep/">Sobelow만으로 충분한가요?</a>에 있습니다.</p>
+</div></section>
+
+<section id="fp"><div class="wrap article">
+<h2>오탐 신호와 테스트</h2>
+<ul>
+<li>인자가 컴파일 타임 리터럴, 모듈 속성(<code>@kinds</code>), <code>~w(...)a</code> 목록에서만 온다.</li>
+<li>컴파일 타임(매크로, <code>for</code>로 함수 생성, <code>config/*.exs</code>)에서만 실행된다.</li>
+<li>입력 집합이 구조적으로 유한하다. 단, 사용자가 그 컬럼에 임의 값을 쓸 수 있으면 실제 취약점입니다.</li>
+<li>mix task, 개발 스크립트, 테스트 코드.</li>
+</ul>
+<p>테스트 앱의 <code>@default_sort String.to_atom("name")</code>(<code>catalog.ex:11</code>)는 컴파일 타임 리터럴이라 오탐으로 판정해야 하는 예입니다. 수정 후에는 atom 수가 늘지 않는지 테스트로 확인합니다.</p>
+<pre><code class="language-elixir"># async: false — 다른 테스트가 만드는 atom 과 섞이지 않게
+test &quot;unknown sort values do not create atoms&quot;, %{conn: conn} do
+  before = :erlang.system_info(:atom_count)
+  for i &lt;- 1..500, do: get(conn, ~p&quot;/posts?sort=unknown_#{i}_#{System.unique_integer()}&quot;)
+  assert :erlang.system_info(:atom_count) - before &lt; 50
+end</code></pre>
+</div></section>
+
+<section id="faq" class="faq"><div class="wrap"><h2>자주 묻는 질문</h2>
+<details><summary><code>String.to_existing_atom</code>으로 바꾸면 안전한가요?</summary><p>고갈은 막지만 이미 존재하는 모든 atom(모듈명, <code>:__struct__</code> 등)을 허용하므로 허용 목록 검사를 함께 해야 합니다. 모르는 값이면 <code>ArgumentError</code>가 나므로 rescue해서 처리합니다.</p></details>
+<details><summary><code>keys: :atoms!</code>는 괜찮나요?</summary><p><code>keys: :atoms!</code>는 <code>String.to_existing_atom/1</code>을 써서 새 atom을 만들지 않으므로 EXS-ATOM-002에 해당하지 않습니다. 다만 모르는 키가 오면 예외가 날 수 있어, 문자열 키와 Ecto changeset 검증을 우선 권합니다.</p></details>
+<details><summary>supervisor가 재시작하면 되지 않나요?</summary><p>아니요. atom 테이블은 VM 전체가 공유하므로 한도에 닿으면 VM 전체가 크래시합니다. 프로세스 격리나 supervisor 재시작으로는 막을 수 없습니다.</p></details>
+</div></section>
+<section id="more"><div class="wrap article">
+<h2>더 보기</h2>
+<p><a href="../../#install">elixir-security-audit 설치하기</a> · <a href="../../#patterns">EXS 패턴 15종 전체</a> · <a href="https://github.com/baryonlabs/elixir-security-audit">GitHub 저장소</a></p>
+<div class="cards"><a class="card" href="../../ko/binary-to-term/"><strong>:erlang.binary_to_term을 안전하게 쓰려면?</strong>외부 입력엔 JSON, 불가피하면 non_executable_binary_to_term(bin, [:safe]).</a><a class="card" href="../../ko/sobelow-vs-semgrep/"><strong>Sobelow만으로 충분한가요?</strong>테스트 앱에서 Sobelow는 코드·설정 13종 중 9종을 잡았습니다. 놓친 4종과 이유.</a></div>
+</div></section>
+
+</main>
+<footer><div class="wrap">
+<p><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub 저장소</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/releases">릴리스</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/CHANGELOG.md">변경 기록</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/SECURITY.md">보안 취약점 신고</a> · <a href="../../llms.txt">llms.txt</a></p><p>자매 프로젝트: <a href="https://github.com/baryonlabs/security-sweep">security-sweep</a> — 여러 프로젝트·서버·컨테이너 이미지를 한 번에 훑는 스캐너 스윕</p><p>MIT 라이선스 © 2026 <a href="https://github.com/baryonlabs">Baryon Labs</a> · 최종 갱신 2026-10-23</p>
+</div></footer>
+</body>
+</html>

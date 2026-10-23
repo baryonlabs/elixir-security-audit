@@ -10,7 +10,7 @@
 ![Elixir](https://img.shields.io/badge/Elixir-1.14%2B-4B275F?logo=elixir)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)
 
-[빠른 시작](#빠른-시작) · [동작 방식](#동작-방식) · [탐지 패턴](#탐지-패턴) · [다른 도구와 비교](#다른-보안-도구와-무엇이-다른가) · [FAQ](#faq) · [English](#english)
+[Website](https://baryonlabs.github.io/elixir-security-audit/) · [빠른 시작](#빠른-시작) · [동작 방식](#동작-방식) · [탐지 패턴](#탐지-패턴) · [다른 도구와 비교](#다른-보안-도구와-무엇이-다른가) · [FAQ](#faq) · [English](#english)
 
 </div>
 

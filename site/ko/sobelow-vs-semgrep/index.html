@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sobelow만으로 충분한가요? Elixir·Phoenix 보안 스캐너 탐지율 실측 비교 결과</title>
+<meta name="description" content="일부러 취약한 Phoenix 앱에서 Sobelow는 코드·설정 취약점 13종 중 9종만 잡았습니다. 놓친 ATOM-002·CMD-001·REDOS-001·SQLI-001의 이유와 Semgrep OSS 0건 함정, Opengrep·mix_audit 조합법을 정리했습니다.">
+<link rel="canonical" href="https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/">
+<meta name="theme-color" content="#0f1b2d">
+<meta name="color-scheme" content="light dark">
+<meta name="author" content="Baryon Labs">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/style.css">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="elixir-security-audit">
+<meta property="og:title" content="Sobelow만으로 충분한가요? Elixir·Phoenix 보안 스캐너 탐지율 실측 비교 결과">
+<meta property="og:description" content="일부러 취약한 Phoenix 앱에서 Sobelow는 코드·설정 취약점 13종 중 9종만 잡았습니다. 놓친 ATOM-002·CMD-001·REDOS-001·SQLI-001의 이유와 Semgrep OSS 0건 함정, Opengrep·mix_audit 조합법을 정리했습니다.">
+<meta property="og:url" content="https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/">
+<meta property="og:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Elixir 앱을 점검하고 고치는 5단계: 스캔, 분류, 수정, 검증, 보고">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sobelow만으로 충분한가요? Elixir·Phoenix 보안 스캐너 탐지율 실측 비교 결과">
+<meta name="twitter:description" content="일부러 취약한 Phoenix 앱에서 Sobelow는 코드·설정 취약점 13종 중 9종만 잡았습니다. 놓친 ATOM-002·CMD-001·REDOS-001·SQLI-001의 이유와 Semgrep OSS 0건 함정, Opengrep·mix_audit 조합법을 정리했습니다.">
+<meta name="twitter:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#org",
+   "name": "Baryon Labs",
+   "url": "https://github.com/baryonlabs",
+   "sameAs": [
+    "https://github.com/baryonlabs"
+   ]
+  },
+  {
+   "@type": "TechArticle",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/#article",
+   "headline": "Sobelow만으로 충분한가요?",
+   "description": "아니요. 테스트 앱에서 Sobelow는 코드·설정 취약점 13종 중 9종만 잡았습니다.",
+   "inLanguage": "ko",
+   "datePublished": "2026-10-23",
+   "dateModified": "2026-10-23",
+   "author": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   },
+   "publisher": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   },
+   "mainEntityOfPage": "https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/",
+   "image": "https://baryonlabs.github.io/elixir-security-audit/og.png",
+   "about": [
+    {
+     "@type": "Thing",
+     "name": "Sobelow"
+    },
+    {
+     "@type": "Thing",
+     "name": "Semgrep"
+    },
+    {
+     "@type": "Thing",
+     "name": "Opengrep"
+    },
+    {
+     "@type": "Thing",
+     "name": "Static application security testing"
+    },
+    {
+     "@type": "Thing",
+     "name": "Elixir"
+    }
+   ],
+   "isPartOf": {
+    "@type": "WebSite",
+    "name": "elixir-security-audit",
+    "url": "https://baryonlabs.github.io/elixir-security-audit/"
+   },
+   "mentions": {
+    "@type": "SoftwareSourceCode",
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#code",
+    "name": "elixir-security-audit",
+    "codeRepository": "https://github.com/baryonlabs/elixir-security-audit"
+   }
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Sobelow는 테스트 앱에서 몇 종을 잡았나요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "코드·설정 ID 13종 중 9종(ATOM-001, DESER-001, RCE-001, SQLI-002, XSS-001, PATH-001, CFG-001, CFG-002, CFG-003)을 잡았습니다. ATOM-002, CMD-001, REDOS-001, SQLI-001은 놓쳤습니다."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Semgrep OSS로 Elixir 룰을 돌리면 왜 0건인가요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Semgrep OSS는 languages: [elixir] 룰을 Pro 전용으로 건너뛰고 오류 없이 0건을 냅니다. Opengrep을 설치하거나 semgrep --pro를 쓰세요."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Sobelow가 의존성 취약점도 보나요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "테스트 앱의 의존성 취약점(EXS-DEP-001)은 Sobelow가 아니라 mix_audit의 몫이었습니다. elixir-security-audit은 mix_audit, hex.audit, OSV-Scanner를 함께 실행합니다."
+     }
+    }
+   ]
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "elixir-security-audit",
+     "item": "https://baryonlabs.github.io/elixir-security-audit/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Sobelow만으로 충분한가요?",
+     "item": "https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<header class="site-header"><div class="wrap">
+<a class="brand" href="../../"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C11 10 6 15.5 6 21a10 10 0 0 0 20 0C26 15.5 21 10 16 2z" fill="#a688d4"/><path d="M12 22a5 5 0 0 0 5 5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></svg><span>elixir-security-audit</span></a>
+<nav class="site-nav" aria-label="주요 메뉴"><a href="../../#install">설치</a><a href="../../#workflow">동작 방식</a><a href="../../#patterns">탐지 패턴</a><a href="../../#compare">비교</a><a href="../../#faq">FAQ</a><a href="../../#guides">질문별 가이드</a><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub</a><a href="../../en/" hreflang="en" lang="en">English</a></nav>
+</div></header>
+<main id="main">
+
+<div class="hero"><div class="wrap article">
+<nav class="crumbs" aria-label="경로"><ol><li><a href="../../">elixir-security-audit</a></li><li aria-current="page">Sobelow만으로 충분한가요?</li></ol></nav>
+<h1>Sobelow만으로 충분한가요?</h1>
+<p class="answer"><strong>아니요. 테스트 앱에서 Sobelow는 코드·설정 취약점 13종 중 9종만 잡았습니다.</strong></p>
+<p class="meta-line">Baryon Labs · 2026-10-23 작성·검증 · 근거: elixir-security-audit 0.1.0 패턴 카탈로그와 테스트 앱</p>
+</div></div>
+
+<section id="numbers"><div class="wrap article">
+<h2>테스트 앱에서 Sobelow가 잡은 것과 놓친 것</h2>
+<p>저장소의 일부러 취약한 Phoenix 앱(<code>test/fixtures/vulnerable_app</code>)에 <code>mix sobelow --format json --private</code>를 실행한 결과, Sobelow는 코드·설정 ID <strong>13종 중 9종</strong>을 잡았습니다. 놓친 4종은 <strong>ATOM-002, CMD-001, REDOS-001, SQLI-001</strong>이며 grep/Opengrep이 잡아야 합니다. 의존성 취약점(EXS-DEP-001)은 Sobelow가 아니라 mix_audit의 몫입니다.</p>
+<p class="note">측정 환경: Elixir 1.18.4 / OTP 27, phoenix 1.7.24, phoenix_live_view 1.2.13, ecto 3.14.2, sobelow 0.16.0, mix_audit 2.1.5. 출처: <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/test/fixtures/vulnerable_app/EXPECTED.md">EXPECTED.md</a></p>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>위치 (sink)</th><th>Sobelow</th><th>Sobelow 검사 (confidence)</th></tr></thead><tbody><tr><td><code>EXS-ATOM-001</code></td><td><code>lib/vuln_app/catalog.ex:22</code></td><td class="yes">탐지</td><td>DOS.StringToAtom (low)</td></tr><tr><td><code>EXS-ATOM-002</code></td><td><code>lib/vuln_app/importer.ex:6</code></td><td class="no">놓침</td><td>—</td></tr><tr><td><code>EXS-DESER-001</code></td><td><code>lib/vuln_app/preferences.ex:10</code></td><td class="yes">탐지</td><td>Misc.BinToTerm (high)</td></tr><tr><td><code>EXS-RCE-001</code></td><td><code>lib/vuln_app/calculator.ex:6</code></td><td class="yes">탐지</td><td>RCE.CodeModule (low)</td></tr><tr><td><code>EXS-CMD-001</code></td><td><code>lib/vuln_app/thumbnails.ex:6</code></td><td class="no">놓침</td><td>— (CI.System 미발동)</td></tr><tr><td><code>EXS-SQLI-001</code></td><td><code>priv/examples/sqli_fragment.exs:14</code></td><td class="no">놓침</td><td>— (컴파일 대상 아님)</td></tr><tr><td><code>EXS-SQLI-002</code></td><td><code>lib/vuln_app/reports.ex:8</code></td><td class="yes">탐지</td><td>SQL.Query (low)</td></tr><tr><td><code>EXS-XSS-001</code></td><td><code>lib/vuln_app_web/components/comment_html.ex:13</code></td><td class="yes">탐지</td><td>XSS.Raw (low)</td></tr><tr><td><code>EXS-REDOS-001</code></td><td><code>lib/vuln_app/search.ex:8</code></td><td class="no">놓침</td><td>—</td></tr><tr><td><code>EXS-PATH-001</code></td><td><code>lib/vuln_app/files.ex:8</code></td><td class="yes">탐지</td><td>Traversal.FileModule (low)</td></tr><tr><td><code>EXS-CFG-001</code></td><td><code>config/prod.exs:8</code></td><td class="yes">탐지</td><td>Config.Secrets (high)</td></tr><tr><td><code>EXS-CFG-002</code></td><td><code>lib/vuln_app_web/router.ex:5</code></td><td class="yes">탐지</td><td>Config.Headers (high)</td></tr><tr><td><code>EXS-CFG-003</code></td><td><code>config/prod.exs:4</code></td><td class="yes">탐지</td><td>Config.HTTPS (high)</td></tr></tbody></table></div>
+</div></section>
+
+<section id="why-miss"><div class="wrap article">
+<h2>왜 놓쳤나요?</h2>
+<ul>
+<li><strong>EXS-ATOM-002</strong> <code>Jason.decode(payload, keys: :atoms)</code>: Sobelow의 atom 검사(<code>DOS.StringToAtom</code> 등)는 JSON 디코더 옵션을 보지 않습니다. → <a href="../atom-exhaustion/">String.to_atom이 왜 위험한가요?</a></li>
+<li><strong>EXS-CMD-001</strong> <code>System.cmd("sh", ["-c", "convert " &lt;&gt; filename ...])</code>: 이 형태에서 Sobelow의 <code>CI.System</code>이 발동하지 않았습니다.</li>
+<li><strong>EXS-REDOS-001</strong> <code>Regex.compile!(pattern)</code>: 동적 정규식에 대한 Sobelow 검사가 없습니다.</li>
+<li><strong>EXS-SQLI-001</strong> <code>fragment("... '#{name}'")</code>: Ecto는 fragment 첫 인자의 문자열 보간을 컴파일 에러로 막기 때문에 이 인스턴스는 컴파일되지 않는 <code>priv/examples/*.exs</code>에 있습니다. 정적 스캐너가 <code>priv/</code>의 <code>*.exs</code>까지 포함해야 잡힙니다.</li>
+</ul>
+<p>또한 Sobelow는 함수 경계를 넘는 추적이 약합니다. 컨트롤러가 <code>params</code>를 컨텍스트 모듈 함수에 넘기고 그 안에서 위험 함수를 쓰면 Medium/Low로 보고되거나 아예 안 잡힐 수 있으므로 grep/Opengrep 결과와 교차 확인합니다.</p>
+</div></section>
+
+<section id="noise"><div class="wrap article">
+<h2>Sobelow가 더 잡은 것: 오탐과 중복</h2>
+<p>같은 실행에서 Sobelow는 ID 집합 밖의 항목 2건을 더 보고했습니다.</p>
+<ul>
+<li><code>Traversal.FileModule</code> on <code>lib/vuln_app/files.ex:14</code>: <strong>오탐</strong>입니다. 경로를 <code>Path.safe_relative/2</code>로 검증한 뒤 읽습니다.</li>
+<li><code>XSS.SendResp</code> (medium) on <code>comment_controller.ex:12</code>: EXS-XSS-001과 원인이 같으므로 분류 단계에서 하나로 합칩니다.</li>
+</ul>
+<p>그래서 elixir-security-audit은 스캐너 결과를 그대로 믿지 않고, Claude가 해당 라인을 직접 읽어 외부 입력이 sink에 닿는지로 실제·오탐·불확실을 판정합니다.</p>
+</div></section>
+
+<section id="semgrep"><div class="wrap article">
+<h2>그럼 Semgrep을 같이 돌리면 되나요?</h2>
+<p class="callout warn">Semgrep OSS는 <code>languages: [elixir]</code> 룰을 Pro 전용으로 건너뛰고 <strong>오류 없이 0건</strong>을 냅니다. 결과가 깨끗해 보여도 실제로는 아무 룰도 돌지 않은 것입니다.</p>
+<p>오픈소스로 쓰려면 Semgrep 포크인 <a href="https://github.com/opengrep/opengrep">Opengrep</a>을 설치하거나 <code>semgrep --pro</code>를 쓰세요. elixir-security-audit의 <code>scan.sh</code>는 이 경우 0건 대신 "건너뜀"으로 표시하고, 번들된 Opengrep 룰 17개(AST·taint·정규식, 일부 autofix)와 BEAM grep 검사를 함께 돌립니다.</p>
+<div class="table-wrap"><table><thead><tr><th>소스</th><th>맡는 영역</th></tr></thead><tbody>
+<tr><td>Sobelow</td><td>Phoenix 코드·설정 (위 표의 9종)</td></tr>
+<tr><td>mix_audit (<code>mix deps.audit</code>)</td><td>의존성 권고 (EXS-DEP-001)</td></tr>
+<tr><td><code>mix hex.audit</code></td><td>retired 패키지(EXS-DEP-002)와 Hex 권고</td></tr>
+<tr><td>OSV-Scanner</td><td><code>mix.lock</code> CVE 교차 확인</td></tr>
+<tr><td>Opengrep 룰 17개 + BEAM grep</td><td>Sobelow가 놓친 ATOM-002, CMD-001, REDOS-001, SQLI-001 등</td></tr>
+</tbody></table></div>
+<p>의존성도 한 도구로는 부족합니다. 테스트 앱에서 <code>plug_crypto 2.2.0</code> 권고(EEF-CVE-2026-105963)는 OSV와 hex.audit만 잡았고, <code>sweet_xml 0.6.6</code>(GHSA-qpmc-wprv-x746)은 mix_audit·OSV·hex.audit 셋 모두 잡았습니다.</p>
+</div></section>
+
+<section id="faq" class="faq"><div class="wrap"><h2>자주 묻는 질문</h2>
+<details><summary>Sobelow는 테스트 앱에서 몇 종을 잡았나요?</summary><p>코드·설정 ID 13종 중 9종(ATOM-001, DESER-001, RCE-001, SQLI-002, XSS-001, PATH-001, CFG-001, CFG-002, CFG-003)을 잡았습니다. ATOM-002, CMD-001, REDOS-001, SQLI-001은 놓쳤습니다.</p></details>
+<details><summary>Semgrep OSS로 Elixir 룰을 돌리면 왜 0건인가요?</summary><p>Semgrep OSS는 <code>languages: [elixir]</code> 룰을 Pro 전용으로 건너뛰고 오류 없이 0건을 냅니다. Opengrep을 설치하거나 <code>semgrep --pro</code>를 쓰세요.</p></details>
+<details><summary>Sobelow가 의존성 취약점도 보나요?</summary><p>테스트 앱의 의존성 취약점(EXS-DEP-001)은 Sobelow가 아니라 mix_audit의 몫이었습니다. elixir-security-audit은 mix_audit, hex.audit, OSV-Scanner를 함께 실행합니다.</p></details>
+</div></section>
+<section id="more"><div class="wrap article">
+<h2>더 보기</h2>
+<p><a href="../../#install">elixir-security-audit 설치하기</a> · <a href="../../#patterns">EXS 패턴 15종 전체</a> · <a href="https://github.com/baryonlabs/elixir-security-audit">GitHub 저장소</a></p>
+<div class="cards"><a class="card" href="../../ko/atom-exhaustion/"><strong>String.to_atom이 왜 위험한가요?</strong>atom은 GC되지 않아 한도 1,048,576에 닿으면 VM 전체가 죽습니다. 취약·안전 코드 비교.</a><a class="card" href="../../ko/binary-to-term/"><strong>:erlang.binary_to_term을 안전하게 쓰려면?</strong>외부 입력엔 JSON, 불가피하면 non_executable_binary_to_term(bin, [:safe]).</a></div>
+</div></section>
+
+</main>
+<footer><div class="wrap">
+<p><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub 저장소</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/releases">릴리스</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/CHANGELOG.md">변경 기록</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/SECURITY.md">보안 취약점 신고</a> · <a href="../../llms.txt">llms.txt</a></p><p>자매 프로젝트: <a href="https://github.com/baryonlabs/security-sweep">security-sweep</a> — 여러 프로젝트·서버·컨테이너 이미지를 한 번에 훑는 스캐너 스윕</p><p>MIT 라이선스 © 2026 <a href="https://github.com/baryonlabs">Baryon Labs</a> · 최종 갱신 2026-10-23</p>
+</div></footer>
+</body>
+</html>

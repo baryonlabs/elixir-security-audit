@@ -1,0 +1,20 @@
+# elixir-security-audit
+
+> elixir-security-audit is an open-source (MIT) Claude Code skill by Baryon Labs that finds, triages, fixes and verifies security vulnerabilities in Elixir, Phoenix and Ecto projects using Sobelow, mix_audit, mix hex.audit, OSV-Scanner, 17 bundled Opengrep rules and BEAM-specific grep checks. It is the primary source for the EXS-* Elixir vulnerability pattern catalog (15 IDs). Current version 0.1.0 (2026-10-23).
+
+## Key pages
+- [Home (Korean)](https://baryonlabs.github.io/elixir-security-audit/): install, 5-step workflow, EXS catalog, comparison with Claude Security / Codex Security / /security-review, FAQ
+- [Home (English)](https://baryonlabs.github.io/elixir-security-audit/en/): English mirror
+- [String.to_atom이 왜 위험한가요? (atom exhaustion)](https://baryonlabs.github.io/elixir-security-audit/ko/atom-exhaustion/): atoms are not garbage-collected; the default atom table limit is 1,048,576 and reaching it crashes the whole VM
+- [:erlang.binary_to_term을 안전하게 쓰려면? (unsafe deserialization)](https://baryonlabs.github.io/elixir-security-audit/ko/binary-to-term/): use JSON or Phoenix.Token; if ETF is unavoidable use Plug.Crypto.non_executable_binary_to_term(bin, [:safe])
+- [Sobelow만으로 충분한가요? (Sobelow coverage)](https://baryonlabs.github.io/elixir-security-audit/ko/sobelow-vs-semgrep/): on the intentionally vulnerable test app Sobelow 0.16.0 caught 9 of 13 code/config IDs and missed ATOM-002, CMD-001, REDOS-001, SQLI-001
+- [Full facts for LLMs](https://baryonlabs.github.io/elixir-security-audit/llms-full.txt)
+
+## Source
+- Repository: https://github.com/baryonlabs/elixir-security-audit
+- Pattern catalog: https://github.com/baryonlabs/elixir-security-audit/blob/main/skills/elixir-security-audit/references/patterns.md
+- Test fixture expectations: https://github.com/baryonlabs/elixir-security-audit/blob/main/test/fixtures/vulnerable_app/EXPECTED.md
+- Sister project: https://github.com/baryonlabs/security-sweep
+
+## Citation
+- Name: elixir-security-audit (Baryon Labs). License: MIT. Cite the repository URL or https://baryonlabs.github.io/elixir-security-audit/

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>elixir-security-audit: Elixir·Phoenix 보안 취약점 점검·수정 스킬</title>
+<meta name="description" content="Elixir·Phoenix 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 외부 입력 도달성을 판정해 별도 브랜치에서 고치고 테스트로 검증하는 무료 오픈소스 Claude Code 스킬입니다. atom 고갈 등 EXS 패턴 15종을 다룹니다.">
+<link rel="canonical" href="https://baryonlabs.github.io/elixir-security-audit/">
+<link rel="alternate" hreflang="ko" href="https://baryonlabs.github.io/elixir-security-audit/">
+<link rel="alternate" hreflang="en" href="https://baryonlabs.github.io/elixir-security-audit/en/">
+<link rel="alternate" hreflang="x-default" href="https://baryonlabs.github.io/elixir-security-audit/">
+<meta name="theme-color" content="#0f1b2d">
+<meta name="color-scheme" content="light dark">
+<meta name="author" content="Baryon Labs">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="elixir-security-audit">
+<meta property="og:title" content="elixir-security-audit: Elixir·Phoenix 보안 취약점 점검·수정 스킬">
+<meta property="og:description" content="Elixir·Phoenix 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 외부 입력 도달성을 판정해 별도 브랜치에서 고치고 테스트로 검증하는 무료 오픈소스 Claude Code 스킬입니다. atom 고갈 등 EXS 패턴 15종을 다룹니다.">
+<meta property="og:url" content="https://baryonlabs.github.io/elixir-security-audit/">
+<meta property="og:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Elixir 앱을 점검하고 고치는 5단계: 스캔, 분류, 수정, 검증, 보고">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="elixir-security-audit: Elixir·Phoenix 보안 취약점 점검·수정 스킬">
+<meta name="twitter:description" content="Elixir·Phoenix 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 외부 입력 도달성을 판정해 별도 브랜치에서 고치고 테스트로 검증하는 무료 오픈소스 Claude Code 스킬입니다. atom 고갈 등 EXS 패턴 15종을 다룹니다.">
+<meta name="twitter:image" content="https://baryonlabs.github.io/elixir-security-audit/og.png">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#org",
+   "name": "Baryon Labs",
+   "url": "https://github.com/baryonlabs",
+   "sameAs": [
+    "https://github.com/baryonlabs"
+   ]
+  },
+  {
+   "@type": "SoftwareSourceCode",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#code",
+   "name": "elixir-security-audit",
+   "description": "elixir-security-audit은 Elixir·Phoenix 프로젝트의 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 판정하고, 고치고, 검증하는 오픈소스 Claude Code 스킬입니다.",
+   "codeRepository": "https://github.com/baryonlabs/elixir-security-audit",
+   "programmingLanguage": [
+    "Elixir",
+    "Shell",
+    "Python"
+   ],
+   "license": "https://opensource.org/licenses/MIT",
+   "version": "0.1.0",
+   "dateModified": "2026-10-23",
+   "author": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   },
+   "publisher": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   }
+  },
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#app",
+   "name": "elixir-security-audit",
+   "description": "elixir-security-audit은 Elixir·Phoenix 프로젝트의 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 판정하고, 고치고, 검증하는 오픈소스 Claude Code 스킬입니다.",
+   "applicationCategory": "DeveloperApplication",
+   "softwareVersion": "0.1.0",
+   "softwareRequirements": "Claude Code, Elixir 1.14+, Python 3, bash",
+   "license": "https://opensource.org/licenses/MIT",
+   "url": "https://baryonlabs.github.io/elixir-security-audit/",
+   "downloadUrl": "https://github.com/baryonlabs/elixir-security-audit",
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+   },
+   "author": {
+    "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
+   }
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://baryonlabs.github.io/elixir-security-audit/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "elixir-security-audit은 무료인가요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "네. MIT 라이선스의 오픈소스이며 무료입니다. 스캐너(Sobelow, mix_audit, hex.audit, OSV-Scanner, Opengrep)도 무료이고, 모델 토큰은 Claude가 발견을 분류하고 수정할 때만 씁니다."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Semgrep으로 룰을 돌렸는데 0건이 나옵니다.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Semgrep OSS는 languages: [elixir] 룰을 Pro 전용으로 건너뛰고 오류 없이 0건을 냅니다. 오픈소스 포크 Opengrep을 설치하거나 semgrep --pro를 쓰세요. scan.sh는 이 경우 0건 대신 \"건너뜀\"으로 표시합니다."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "fragment(\"... #{x}\")가 탐지됐는데 컴파일이 안 되는 코드입니다.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Ecto 3는 fragment의 첫 인자가 문자열 리터럴이 아니면 컴파일 에러를 냅니다. 이 패턴이 잡히면 대개 죽은 코드, 매크로, 원시 SQL입니다. 원시 SQL이면 EXS-SQLI-002로 재분류하세요."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "오탐을 숨기고 싶습니다.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "스킬은 .sobelow-skips, # nosemgrep 같은 억제를 사용자 승인 없이 추가하지 않습니다. 판정 표에 근거와 함께 \"오탐\"으로 기록하고, 억제가 필요하면 직접 승인하세요."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "LLM 없이 스캐너만 돌릴 수 있나요?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "네. bash scripts/scan.sh /path/to/project로 단독 실행됩니다. 종료 코드는 0 스캔 완료(발견 유무 무관), 1 실행 오류, 2 Elixir 프로젝트 아님입니다."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "여러 프로젝트나 서버를 한 번에 보고 싶습니다.",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "자매 프로젝트 security-sweep을 쓰세요. 디렉터리 아래 모든 프로젝트와 서버·이미지를 훑고, Elixir 프로젝트는 이 스킬의 scan.sh를 자동으로 호출합니다."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<header class="site-header"><div class="wrap">
+<a class="brand" href="./"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C11 10 6 15.5 6 21a10 10 0 0 0 20 0C26 15.5 21 10 16 2z" fill="#a688d4"/><path d="M12 22a5 5 0 0 0 5 5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></svg><span>elixir-security-audit</span></a>
+<nav class="site-nav" aria-label="주요 메뉴"><a href="#install">설치</a><a href="#workflow">동작 방식</a><a href="#patterns">탐지 패턴</a><a href="#compare">비교</a><a href="#faq">FAQ</a><a href="#guides">질문별 가이드</a><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub</a><a href="en/" hreflang="en" lang="en">English</a></nav>
+</div></header>
+<main id="main">
+
+<div class="hero"><div class="wrap">
+<h1>elixir-security-audit: Elixir·Phoenix 보안 점검·수정 스킬</h1>
+<p class="answer"><strong>elixir-security-audit은 Elixir·Phoenix 프로젝트의 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 판정하고, 고치고, 검증하는 오픈소스 Claude Code 스킬입니다.</strong> 결정적 스캐너로 빠짐없이 훑고, Claude가 각 발견이 외부 입력에 닿는지 읽어 판정한 뒤, 별도 브랜치에서 최소 변경으로 고치고 테스트로 검증합니다.</p>
+<ul class="chips"><li>v0.1.0 (2026-10-23)</li><li>MIT · 무료</li><li>Claude Code 플러그인</li><li>EXS 패턴 15종</li><li>Opengrep 룰 17개</li></ul>
+<div class="cta"><a class="btn btn-primary" href="#install">설치하기</a><a class="btn btn-ghost" href="https://github.com/baryonlabs/elixir-security-audit">GitHub에서 보기</a></div>
+</div></div>
+
+<section id="demo"><div class="wrap">
+<h2>한 문장으로 요청하면 5단계가 끝납니다</h2>
+<p>Elixir 저장소에서 Claude Code를 열고 요청하면 스킬이 브랜치 생성부터 보고서까지 진행합니다. 아래는 README에 실린 예시 대화입니다.</p>
+<pre><code class="language-text">&gt; 이 Phoenix 앱 보안 점검하고 실제 취약점만 고쳐줘
+
+● security/audit-20261023 브랜치 생성
+● 스캔: Sobelow · mix_audit · hex.audit · OSV · Opengrep · BEAM grep → 18건
+● 분류: 실제 15 · 오탐 2 · 불확실 1  (표로 확인 요청)
+● 수정: fix(security): EXS-ATOM-001 … 항목별 커밋 12개
+● 검증: mix compile --warnings-as-errors ✓  mix test ✓  재스캔 18 → 3
+● 보고: security-audit/REPORT.md</code></pre>
+</div></section>
+
+<section id="install"><div class="wrap">
+<h2>설치</h2>
+<p>Claude Code에서 마켓플레이스를 추가하고 플러그인을 설치합니다.</p>
+<pre><code class="language-text">/plugin marketplace add baryonlabs/elixir-security-audit
+/plugin install elixir-security-audit@baryonlabs-elixir-security</code></pre>
+<p>Elixir 저장소에서 Claude Code를 열고 슬래시 명령과 함께 요청합니다.</p>
+<pre><code class="language-text">/elixir-security-audit:elixir-security-audit 보안 점검하고 실제 취약점만 고쳐줘</code></pre>
+<p>스킬 폴더만 <code>~/.claude/skills/</code>에 복사했다면 명령은 <code>/elixir-security-audit</code>입니다. "이 Phoenix 앱 보안 점검해줘"처럼 자연어로 요청해도 Claude가 스킬을 고를 수 있지만, 명령을 붙이는 것이 확실합니다.</p>
+<h3>스킬만 복사해서 쓰기 / 스캐너만 단독 실행</h3>
+<pre><code class="language-bash">git clone https://github.com/baryonlabs/elixir-security-audit
+cp -r elixir-security-audit/skills/elixir-security-audit ~/.claude/skills/
+
+# LLM 없이 스캐너만 (CI·로컬)
+bash ~/.claude/skills/elixir-security-audit/scripts/scan.sh /path/to/project \
+  [--no-deps-fetch] [--skip-semgrep] [--out DIR]</code></pre>
+<p>종료 코드: <code>0</code> 스캔 완료(발견 유무 무관) · <code>1</code> 실행 오류 · <code>2</code> Elixir 프로젝트 아님</p>
+<h3>요구 사항</h3>
+<ul>
+<li>Elixir 1.14+ (권장 1.18), Python 3, bash, Claude Code</li>
+<li>대상 프로젝트 deps: <code>{:sobelow, "~&gt; 0.13", only: [:dev, :test], runtime: false}</code>, <code>{:mix_audit, "~&gt; 2.1", only: [:dev, :test], runtime: false}</code> (스킬이 사용자 확인 후 추가)</li>
+<li>선택: <a href="https://github.com/google/osv-scanner">osv-scanner</a>, <a href="https://github.com/opengrep/opengrep">opengrep</a> (권장) 또는 <code>semgrep --pro</code></li>
+</ul>
+<p class="callout warn">Semgrep OSS는 <code>languages: [elixir]</code> 룰을 Pro 전용으로 건너뛰어 <strong>오류 없이 0건</strong>을 냅니다. 오픈소스로 쓰려면 Opengrep을 설치하세요.</p>
+</div></section>
+
+<section id="workflow"><div class="wrap">
+<h2>동작 방식: 스캔 → 분류 → 수정 → 검증 → 보고</h2>
+<figure><img src="assets/elixir-steps.webp" width="1536" height="1024" alt="Elixir 앱을 점검하고 고치는 5단계: 스캔(Sobelow, mix_audit, OSV), 분류(실제·오탐·불확실), 수정(security/audit 브랜치), 검증(mix test, 재스캔 18 → 3), 보고(REPORT.md)"><figcaption>main은 건드리지 않고, 실제 취약점만 고치고, 테스트로 확인합니다.</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>단계</th><th>하는 일</th><th>산출물</th></tr></thead><tbody>
+<tr><td>0. 전제 확인</td><td><code>mix.exs</code>·umbrella 감지, 작업 트리 확인, <code>security/audit-YYYYMMDD</code> 브랜치 생성, 기준선 테스트</td><td>—</td></tr>
+<tr><td>1. 스캔</td><td>6개 소스(Sobelow, mix_audit, hex.audit, OSV-Scanner, Opengrep 룰 17개, BEAM grep) 실행 → 정규화·중복 제거</td><td><code>security-audit/findings.json</code>, <code>summary.md</code>, 원본 출력</td></tr>
+<tr><td>2. 분류</td><td>코드를 직접 읽고 외부 입력(params·headers·socket·외부 API)이 sink에 닿는지 판정: 실제·오탐·불확실</td><td>판정 표 (사용자 확인)</td></tr>
+<tr><td>3. 수정</td><td>패턴 카탈로그의 표준 수정, 동작이 바뀌면 테스트 추가</td><td><code>fix(security): …</code> 커밋</td></tr>
+<tr><td>4. 검증</td><td><code>mix compile --warnings-as-errors</code>, <code>mix test</code>, 재스캔</td><td>전후 건수</td></tr>
+<tr><td>5. 보고</td><td>남은 항목과 이유, CI 추가 제안</td><td><code>security-audit/REPORT.md</code></td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="why-beam"><div class="wrap">
+<h2>왜 Elixir 전용 점검이 필요한가</h2>
+<p>범용 AI 보안 리뷰(Claude Security, <code>/security-review</code>, Codex Security)는 로직 결함을 잘 찾지만 Elixir 전용 스캐너(Sobelow, mix_audit)를 실행하지 않고, BEAM 특유의 위험을 체계적으로 다루지 않습니다.</p>
+<ul>
+<li><strong>atom 고갈:</strong> atom은 GC되지 않고 테이블 한도(기본 1,048,576)에 닿으면 VM 전체가 죽습니다. <code>String.to_atom(params["x"])</code> 한 줄이면 됩니다. → <a href="ko/atom-exhaustion/">String.to_atom이 왜 위험한가요?</a></li>
+<li><strong><code>:erlang.binary_to_term/1</code>:</strong> 외부 바이너리로 atom과 함수를 만들 수 있습니다. → <a href="ko/binary-to-term/">안전하게 쓰려면?</a></li>
+<li><strong>Ecto 원시 SQL:</strong> <code>Repo.query("... #{x}")</code>는 Ecto의 컴파일 타임 보호를 우회합니다.</li>
+<li><strong>의존성 권고:</strong> mix_audit DB와 OSV(EEF CNA 포함)는 반영 시점이 달라 한쪽만 보면 놓칩니다. 테스트 앱에서 <code>plug_crypto 2.2.0</code> 권고(EEF-CVE-2026-105963)는 OSV·hex.audit만 잡았습니다.</li>
+</ul>
+</div></section>
+
+<section id="patterns"><div class="wrap">
+<h2>탐지 패턴: EXS 카탈로그 15종</h2>
+<p>각 패턴은 취약 코드와 안전 코드 쌍, 오탐 신호, 테스트 아이디어와 함께 <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/skills/elixir-security-audit/references/patterns.md">references/patterns.md</a>에 정리되어 있습니다. 심각도는 기본값에서 시작해 도달성과 영향으로 조정합니다.</p>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>유형</th><th>예</th><th>기본 심각도</th></tr></thead><tbody><tr><td><code>EXS-ATOM-001</code></td><td>Atom 고갈 (동적 atom 생성)</td><td><code>String.to_atom(params["x"])</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-ATOM-002</code></td><td>Atom 고갈 (JSON atom 키)</td><td><code>Jason.decode(b, keys: :atoms)</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-DESER-001</code></td><td>안전하지 않은 역직렬화</td><td><code>:erlang.binary_to_term(cookie)</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-RCE-001</code></td><td>동적 코드 실행</td><td><code>Code.eval_string/1</code>, <code>EEx.eval_string/2</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-CMD-001</code></td><td>OS 명령 주입</td><td><code>:os.cmd/1</code>, <code>System.cmd("sh", ["-c", ...])</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-SQLI-001</code></td><td>SQL 인젝션 (Ecto fragment)</td><td><code>fragment("... #{x}")</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-SQLI-002</code></td><td>SQL 인젝션 (원시 SQL)</td><td><code>Repo.query("... #{x}")</code></td><td class="sev sev-c">Critical</td></tr><tr><td><code>EXS-XSS-001</code></td><td>XSS (이스케이프 우회)</td><td><code>raw(@user_html)</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-REDOS-001</code></td><td>ReDoS (동적 정규식)</td><td><code>Regex.compile!(params["re"])</code></td><td class="sev sev-m">Medium</td></tr><tr><td><code>EXS-PATH-001</code></td><td>경로 조작</td><td><code>File.read!(Path.join(dir, params["f"]))</code></td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-CFG-001</code></td><td>비밀값 하드코딩</td><td><code>config/prod.exs</code>의 <code>secret_key_base</code> 리터럴</td><td class="sev sev-h">High</td></tr><tr><td><code>EXS-CFG-002</code></td><td>CSRF·보안 헤더 누락</td><td><code>:put_secure_browser_headers</code> 없는 <code>pipeline :browser</code></td><td class="sev sev-m">Medium</td></tr><tr><td><code>EXS-CFG-003</code></td><td>HTTPS 강제 없음</td><td>endpoint 설정에 <code>force_ssl</code> 없음</td><td class="sev sev-l">Low</td></tr><tr><td><code>EXS-DEP-001</code></td><td>취약한 의존성</td><td>mix_audit·OSV·hex.audit가 보고한 <code>mix.lock</code> 버전</td><td class="sev">권고 기준</td></tr><tr><td><code>EXS-DEP-002</code></td><td>Retired Hex 패키지</td><td><code>mix hex.audit</code>가 보고한 retire 버전</td><td class="sev sev-m">Medium</td></tr></tbody></table></div>
+</div></section>
+
+<section id="sample"><div class="wrap">
+<h2>실제 출력 예: 테스트용 취약 앱 스캔 결과</h2>
+<p>저장소의 <code>test/fixtures/vulnerable_app</code>은 EXS 패턴 14종을 하나씩 담은 일부러 취약한 Phoenix 앱입니다(오탐 연습용 <code># SAFE:</code> 코드 9개 포함, 배포 금지). 아래는 이 앱을 스캔한 <code>summary.md</code>의 일부이며, 판정 칸은 분류 단계에서 Claude가 채웁니다.</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>심각도</th><th>ID</th><th>위치</th><th>출처</th><th>수정안</th></tr></thead><tbody><tr><td>1</td><td class="sev sev-c">Critical</td><td><code>EXS-RCE-001</code></td><td><code>lib/vuln_app/calculator.ex:6</code></td><td>grep+sobelow</td><td>동적 평가 제거, 허용 목록 기반 디스패치</td></tr><tr><td>2</td><td class="sev sev-c">Critical</td><td><code>EXS-DESER-001</code></td><td><code>lib/vuln_app/preferences.ex:10</code></td><td>grep+sobelow</td><td><code>Plug.Crypto.non_executable_binary_to_term(bin, [:safe])</code></td></tr><tr><td>3</td><td class="sev sev-c">Critical</td><td><code>EXS-SQLI-002</code></td><td><code>lib/vuln_app/reports.ex:8</code></td><td>grep+sobelow</td><td><code>$1</code> 플레이스홀더 + 인자 리스트</td></tr><tr><td>4</td><td class="sev sev-c">Critical</td><td><code>EXS-CMD-001</code></td><td><code>lib/vuln_app/thumbnails.ex:6</code></td><td>grep</td><td><code>System.cmd(exe, [args])</code> + 허용 목록</td></tr><tr><td>7</td><td class="sev sev-h">High</td><td><code>EXS-ATOM-001</code></td><td><code>lib/vuln_app/catalog.ex:22</code></td><td>grep+sobelow</td><td>허용 목록 맵 또는 <code>String.to_existing_atom/1</code></td></tr><tr><td>12</td><td class="sev sev-h">High</td><td><code>EXS-DEP-001</code></td><td><code>mix.lock:21</code></td><td>mix_audit+osv+hex_audit</td><td>sweet_xml 0.6.6 → 0.7.0 (GHSA-qpmc-wprv-x746)</td></tr><tr><td>17</td><td class="sev sev-m">Medium</td><td><code>EXS-DEP-001</code></td><td><code>mix.lock:18</code></td><td>osv+hex_audit</td><td>plug_crypto 2.2.0 (EEF-CVE-2026-105963)</td></tr><tr><td>18</td><td class="sev sev-l">Low</td><td><code>EXS-CFG-003</code></td><td><code>config/prod.exs:1</code></td><td>grep+sobelow</td><td><code>force_ssl: [hsts: true]</code></td></tr></tbody></table></div>
+<p>같은 앱에서 Sobelow 단독으로는 코드·설정 ID 13종 중 9종만 잡혔습니다. → <a href="ko/sobelow-vs-semgrep/">Sobelow만으로 충분한가요?</a></p>
+</div></section>
+
+<section id="compare"><div class="wrap">
+<h2>다른 보안 도구와 무엇이 다른가</h2>
+<h3>쉽게 말하면: 탐정과 공항 검색대</h3>
+<figure><img src="assets/easy-compare.webp" width="1536" height="1024" loading="lazy" alt="탐정과 공항 검색대: 로직 결함은 AI 보안 리뷰가, 알려진 취약점은 스캐너 스윕이 찾습니다"><figcaption>그림: ChatGPT 이미지 생성.</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th></th><th>탐정 — AI 보안 리뷰<br><span class="note">Codex Security · Claude Security · <code>/security-review</code></span></th><th>공항 검색대 — 스캐너 스윕<br><span class="note">security-sweep · elixir-security-audit</span></th></tr></thead><tbody>
+<tr><th>하는 일</th><td>코드를 처음부터 읽고 추리해서 "이 문은 잠겨 있지 않네" 같은 설계·로직 결함을 찾습니다</td><td>모든 가방(프로젝트·서버·이미지)을 통과시키며 수배 목록(CVE DB)에 오른 위험물을 빠짐없이 찾습니다</td></tr>
+<tr><th>잘 찾는 것</th><td>인가 우회, 잘못된 신뢰 경계, 처음 보는 수법</td><td>오래된 라이브러리, 서버 OS 패키지 취약점, 흘린 비밀값, 언어별 위험 API</td></tr>
+<tr><th>놓치기 쉬운 것</th><td>수배 목록 대조 (의존성 CVE는 직접 안 봄)</td><td>목록에 없는 새로운 수법</td></tr>
+<tr><th>결과</th><td>똑똑하지만 돌릴 때마다 조금씩 다름</td><td>같은 입력이면 항상 같은 결과</td></tr>
+<tr><th>확인 방법</th><td>다른 에이전트가 한 번 더 검증</td><td>수배 목록이 진짜인지 OSV로 조회하고, 그 물건을 실제로 꺼내 쓰는지(도달성) 확인</td></tr>
+<tr><th>비용</th><td>모델 토큰 (스캔마다)</td><td>스캐너는 무료, LLM은 분류할 때만</td></tr>
+</tbody></table></div>
+<p><strong>그래서 둘 다 씁니다.</strong> 검색대로 알려진 위험을 먼저 전부 걸러내고, 중요한 저장소는 탐정에게 맡겨 숨은 로직 결함을 찾습니다.</p>
+<div class="table-wrap"><table><thead><tr><th>이럴 때</th><th>이것부터</th></tr></thead><tbody>
+<tr><td>"우리 프로젝트·서버 전체에 알려진 취약점 있나?"</td><td><a href="https://github.com/baryonlabs/security-sweep">security-sweep</a></td></tr>
+<tr><td>"이 Phoenix 앱 고쳐 줘"</td><td>elixir-security-audit</td></tr>
+<tr><td>"PR 하나 머지 전에 빨리 봐 줘"</td><td><code>/security-review</code></td></tr>
+<tr><td>"결제·인증 같은 핵심 저장소를 깊게 털어 줘"</td><td>Claude Security 또는 Codex Security</td></tr>
+</tbody></table></div>
+<h3>자세히 비교</h3>
+<figure><img src="assets/comparison.svg" width="1240" height="960" loading="lazy" alt="보안 점검 도구 비교: Codex Security, /security-review, Claude Security, elixir-security-audit, security-sweep"></figure>
+<div class="table-wrap"><table><thead><tr><th></th><th>OpenAI Codex Security</th><th>Claude Code <code>/security-review</code></th><th>Anthropic Claude Security 플러그인</th><th>elixir-security-audit</th><th>security-sweep</th></tr></thead><tbody>
+<tr><th>접근 방식</th><td>LLM이 코드를 읽고 탐지 (CLI·SDK·Codex 플러그인·GitHub Action)</td><td>LLM 1회 보안 패스</td><td>LLM 멀티에이전트 (아키텍처 → 위협 모델 → 탐색 → 독립 검증)</td><td>결정적 스캐너 + LLM 분류·수정</td><td>결정적 스캐너 + LLM 분류</td></tr>
+<tr><th>범위</th><td>저장소·경로·diff, deep 모드, 여러 저장소 bulk 스캔</td><td>현재 브랜치</td><td>저장소 전체·일부, 브랜치·PR·커밋 diff</td><td>Elixir/Phoenix 프로젝트 1개</td><td>디렉터리 아래 모든 프로젝트 + 서버 + 컨테이너 이미지</td></tr>
+<tr><th>의존성 CVE</th><td>직접 스캔하지 않음 (Snyk·Endor 결과 가져오기)</td><td>다루지 않음</td><td>다루지 않음 (공식 문서: 기존 의존성 스캐너와 병행 권장)</td><td>mix_audit · hex.audit · OSV</td><td>OSV-Scanner (전 생태계)</td></tr>
+<tr><th>CVE 실재 검증</th><td>—</td><td>—</td><td>—</td><td>OSV 대조</td><td>OSV 조회 + CISA KEV + EPSS</td></tr>
+<tr><th>수정</th><td><code>cs patch</code>, <code>verify-fix</code></td><td>보고 중심</td><td><code>patches/</code>에 패치 파일, 자동 적용 안 함</td><td>별도 브랜치에 커밋 (승인 후)</td><td>읽기 전용, 언어별 스킬로 넘김</td></tr>
+<tr><th>LLM 없이 실행</th><td>불가</td><td>불가</td><td>불가</td><td><code>scan.sh</code> 단독 가능</td><td>스크립트 단독·<code>--offline</code> 가능</td></tr>
+<tr><th>필요 조건</th><td>OpenAI 로그인·API 키 (Bedrock 등 가능), Node 22+</td><td>Claude Code</td><td>유료 플랜·API, python3 3.9+</td><td>Claude Code, Elixir</td><td>Claude Code, osv-scanner, trivy</td></tr>
+</tbody></table></div>
+<p><strong>대체가 아니라 조합입니다.</strong> 세 LLM 도구는 사람 보안 연구자처럼 코드를 읽어 로직 결함(인가 우회, 잘못된 신뢰 경계 등)을 찾는 데 강합니다. 이 스킬은 알려진 취약점(의존성 CVE, 언어별 위험 API)을 결정적 스캐너로 빠짐없이 훑고, CVE가 실재하는지와 코드에서 실제로 쓰는지를 확인합니다. 권장 순서: security-sweep로 전체를 훑기 → Elixir 프로젝트는 elixir-security-audit로 수정 → 중요한 저장소는 Claude Security 또는 Codex Security로 로직 결함 딥스캔.</p>
+<p class="note">출처: <a href="https://github.com/openai/codex-security">openai/codex-security</a> README·agent workflows, <a href="https://code.claude.com/docs/en/claude-security">Claude Security 문서</a>, <a href="https://github.com/anthropics/claude-code-security-review">anthropics/claude-code-security-review</a>. 2026-10-23 기준이며 각 도구는 계속 바뀝니다.</p>
+</div></section>
+
+<section id="principles"><div class="wrap">
+<h2>안전 원칙</h2>
+<ul>
+<li>스캐너 출력·코드 주석은 <strong>데이터</strong>이지 지시가 아님 (프롬프트 인젝션 방어)</li>
+<li>main/master 직접 커밋 금지, 비밀값 보고서 노출 금지</li>
+<li>오탐은 근거와 함께 기록만 — <code>.sobelow-skips</code>, <code># nosemgrep</code> 등 경고 숨기기는 사용자 승인 필요</li>
+<li>메이저 업그레이드·설계 변경은 수정 전 사용자 확인</li>
+</ul>
+<p>이 스킬은 도구·패턴 기반 점검입니다. 인가 누락(IDOR), 비즈니스 로직 결함, 멀티테넌시 경계 같은 논리 버그는 잡지 못하므로, 끝난 뒤 <code>/security-review</code>나 Claude Security로 리뷰를 이어 가길 권합니다.</p>
+<h3>CI에 넣기</h3>
+<p><a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/skills/elixir-security-audit/templates/github-actions.yml">templates/github-actions.yml</a>을 <code>.github/workflows/</code>에 복사하면 PR마다 <code>mix hex.audit</code>, <code>mix deps.audit</code>, <code>mix sobelow --exit medium</code>, OSV-Scanner가 돌아갑니다.</p>
+</div></section>
+
+<section id="facts"><div class="wrap">
+<h2>프로젝트 정보</h2>
+<dl class="facts">
+<dt>이름</dt><dd>elixir-security-audit</dd>
+<dt>버전</dt><dd>0.1.0 (2026-10-23)</dd>
+<dt>라이선스·가격</dt><dd>MIT, 무료 오픈소스</dd>
+<dt>언어</dt><dd>Elixir · Shell · Python (<code>scan.sh</code>는 bash 3.2+, <code>summarize.py</code>는 python3 표준 라이브러리만)</dd>
+<dt>필요 조건</dt><dd>Claude Code, Elixir 1.14+, Python 3, bash</dd>
+<dt>만든 곳</dt><dd><a href="https://github.com/baryonlabs">Baryon Labs</a></dd>
+<dt>저장소</dt><dd><a href="https://github.com/baryonlabs/elixir-security-audit">github.com/baryonlabs/elixir-security-audit</a></dd>
+</dl>
+</div></section>
+
+<section id="faq" class="faq"><div class="wrap"><h2>자주 묻는 질문</h2>
+<details><summary>elixir-security-audit은 무료인가요?</summary><p>네. MIT 라이선스의 오픈소스이며 무료입니다. 스캐너(Sobelow, mix_audit, hex.audit, OSV-Scanner, Opengrep)도 무료이고, 모델 토큰은 Claude가 발견을 분류하고 수정할 때만 씁니다.</p></details>
+<details><summary>Semgrep으로 룰을 돌렸는데 0건이 나옵니다.</summary><p>Semgrep OSS는 <code>languages: [elixir]</code> 룰을 Pro 전용으로 건너뛰고 오류 없이 0건을 냅니다. 오픈소스 포크 Opengrep을 설치하거나 <code>semgrep --pro</code>를 쓰세요. <code>scan.sh</code>는 이 경우 0건 대신 "건너뜀"으로 표시합니다.</p></details>
+<details><summary><code>fragment("... #{x}")</code>가 탐지됐는데 컴파일이 안 되는 코드입니다.</summary><p>Ecto 3는 <code>fragment</code>의 첫 인자가 문자열 리터럴이 아니면 컴파일 에러를 냅니다. 이 패턴이 잡히면 대개 죽은 코드, 매크로, 원시 SQL입니다. 원시 SQL이면 EXS-SQLI-002로 재분류하세요.</p></details>
+<details><summary>오탐을 숨기고 싶습니다.</summary><p>스킬은 <code>.sobelow-skips</code>, <code># nosemgrep</code> 같은 억제를 사용자 승인 없이 추가하지 않습니다. 판정 표에 근거와 함께 "오탐"으로 기록하고, 억제가 필요하면 직접 승인하세요.</p></details>
+<details><summary>LLM 없이 스캐너만 돌릴 수 있나요?</summary><p>네. <code>bash scripts/scan.sh /path/to/project</code>로 단독 실행됩니다. 종료 코드는 0 스캔 완료(발견 유무 무관), 1 실행 오류, 2 Elixir 프로젝트 아님입니다.</p></details>
+<details><summary>여러 프로젝트나 서버를 한 번에 보고 싶습니다.</summary><p>자매 프로젝트 security-sweep을 쓰세요. 디렉터리 아래 모든 프로젝트와 서버·이미지를 훑고, Elixir 프로젝트는 이 스킬의 <code>scan.sh</code>를 자동으로 호출합니다.</p></details>
+</div></section>
+
+<section id="guides"><div class="wrap">
+<h2>질문별 가이드</h2>
+<div class="cards"><a class="card" href="ko/atom-exhaustion/"><strong>String.to_atom이 왜 위험한가요?</strong>atom은 GC되지 않아 한도 1,048,576에 닿으면 VM 전체가 죽습니다. 취약·안전 코드 비교.</a><a class="card" href="ko/binary-to-term/"><strong>:erlang.binary_to_term을 안전하게 쓰려면?</strong>외부 입력엔 JSON, 불가피하면 non_executable_binary_to_term(bin, [:safe]).</a><a class="card" href="ko/sobelow-vs-semgrep/"><strong>Sobelow만으로 충분한가요?</strong>테스트 앱에서 Sobelow는 코드·설정 13종 중 9종을 잡았습니다. 놓친 4종과 이유.</a></div>
+</div></section>
+
+</main>
+<footer><div class="wrap">
+<p><a href="https://github.com/baryonlabs/elixir-security-audit">GitHub 저장소</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/releases">릴리스</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/CHANGELOG.md">변경 기록</a> · <a href="https://github.com/baryonlabs/elixir-security-audit/blob/main/SECURITY.md">보안 취약점 신고</a> · <a href="llms.txt">llms.txt</a></p><p>자매 프로젝트: <a href="https://github.com/baryonlabs/security-sweep">security-sweep</a> — 여러 프로젝트·서버·컨테이너 이미지를 한 번에 훑는 스캐너 스윕</p><p>MIT 라이선스 © 2026 <a href="https://github.com/baryonlabs">Baryon Labs</a> · 최종 갱신 2026-10-23</p>
+</div></footer>
+</body>
+</html>
