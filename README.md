@@ -69,6 +69,8 @@ bash ~/.claude/skills/elixir-security-audit/scripts/scan.sh /path/to/project \
 
 ## 동작 방식
 
+![Elixir 앱을 점검하고 고치는 5단계: 스캔 → 분류 → 수정 → 검증 → 보고](docs/elixir-steps.webp)
+
 ```mermaid
 flowchart LR
   A[전제 확인<br/>mix.exs · umbrella<br/>클린 트리 · 새 브랜치] --> B[스캔<br/>scan.sh]
