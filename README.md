@@ -8,6 +8,26 @@
 
 Claude Security 플러그인, `/security-review`, Semgrep 플러그인, Trail of Bits skills 같은 범용 도구는 훌륭하지만 **Elixir 전용 도구(Sobelow, mix_audit)를 직접 호출하지 않고**, BEAM 특유의 위험(atom 고갈로 인한 VM 크래시, `binary_to_term` 역직렬화, Ecto `fragment`/`Repo.query` SQL 인젝션 등)을 체계적으로 다루지 않습니다. 이 스킬이 그 빈틈을 메웁니다.
 
+## 다른 보안 도구와 무엇이 다른가
+
+![보안 점검 도구 비교: Codex Security, /security-review, Claude Security, elixir-security-audit, security-sweep](docs/comparison.svg)
+
+| | OpenAI **Codex Security** | Claude Code **`/security-review`** | Anthropic **Claude Security** 플러그인 | **elixir-security-audit** | **security-sweep** |
+|---|---|---|---|---|---|
+| 접근 방식 | LLM이 코드를 읽고 탐지 (CLI·SDK·Codex 플러그인·GitHub Action) | LLM 1회 보안 패스 | LLM 멀티에이전트 (아키텍처 → 위협 모델 → 탐색 → 독립 검증) | 결정적 스캐너 + LLM 분류·수정 | 결정적 스캐너 + LLM 분류 |
+| 범위 | 저장소·경로·diff, deep 모드, 여러 저장소 bulk 스캔 | 현재 브랜치 | 저장소 전체·일부, 브랜치·PR·커밋 diff | Elixir/Phoenix 프로젝트 1개 | 디렉터리 아래 모든 프로젝트 + 서버 + 컨테이너 이미지 |
+| 의존성 CVE | 직접 스캔하지 않음 (Snyk·Endor 결과 가져오기) | 다루지 않음 | 다루지 않음 (공식 문서: 기존 의존성 스캐너와 병행 권장) | mix_audit · hex.audit · OSV | OSV-Scanner (전 생태계) |
+| CVE 실재 검증 | — | — | — | OSV 대조 | OSV 조회 + CISA KEV + EPSS |
+| 수정 | `cs patch`, `verify-fix` | 보고 중심 | `patches/`에 패치 파일, 자동 적용 안 함 | 별도 브랜치에 커밋 (승인 후) | 읽기 전용, 언어별 스킬로 넘김 |
+| LLM 없이 실행 | 불가 | 불가 | 불가 | `scan.sh` 단독 가능 | 스크립트 단독·`--offline` 가능 |
+| 필요 조건 | OpenAI 로그인·API 키 (Bedrock 등 가능), Node 22+ | Claude Code | 유료 플랜·API, python3 3.9+ | Claude Code, Elixir | Claude Code, osv-scanner, trivy |
+
+**대체가 아니라 조합입니다.** 세 LLM 도구는 사람 보안 연구자처럼 코드를 읽어 **로직 결함**(인가 우회, 잘못된 신뢰 경계 등)을 찾는 데 강합니다. 이 저장소의 스킬은 **알려진 취약점**(의존성 CVE, 언어별 위험 API, 서버 OS 패키지)을 결정적 스캐너로 빠짐없이 훑고, CVE가 실재하는지와 코드에서 실제로 쓰는지를 확인합니다. Claude Security 공식 문서도 "기존 정적 분석·의존성 스캐너와 함께 쓰라"고 안내합니다.
+
+권장 순서: `security-sweep`로 전체를 훑기 → Elixir 프로젝트는 `elixir-security-audit`로 수정 → 중요한 저장소는 Claude Security 또는 Codex Security로 로직 결함 딥스캔.
+
+<sub>출처: [openai/codex-security](https://github.com/openai/codex-security) README·[agent workflows](https://github.com/openai/codex-security/blob/main/docs/agent-workflows.md), [Claude Security 문서](https://code.claude.com/docs/en/claude-security), [anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review). 2026-10-23 기준이며 각 도구는 계속 바뀝니다.</sub>
+
 ## 설치
 
 ```text
