@@ -46,10 +46,10 @@
 Elixir 저장소에서 Claude Code를 열고 말하면 됩니다.
 
 ```text
-보안 점검해줘
-취약점 찾아서 실제인 것만 고쳐줘
-/elixir-security-audit
+/elixir-security-audit:elixir-security-audit 보안 점검하고 실제 취약점만 고쳐줘
 ```
+
+스킬 폴더만 `~/.claude/skills/`에 복사했다면 명령은 `/elixir-security-audit`입니다. "이 Phoenix 앱 보안 점검해줘"처럼 자연어로 요청해도 Claude가 스킬을 고를 수 있지만, 명령을 붙이는 것이 확실합니다.
 
 <details>
 <summary>스킬만 복사해서 쓰기 / 스캐너만 단독 실행</summary>
@@ -127,6 +127,32 @@ flowchart LR
 상세(취약/안전 코드 쌍, 오탐 신호): [`references/patterns.md`](skills/elixir-security-audit/references/patterns.md)
 
 ## 다른 보안 도구와 무엇이 다른가
+
+### 쉽게 말하면: 탐정과 공항 검색대
+
+<!-- EASY-IMAGE -->
+
+| | 🕵️ **탐정** — AI 보안 리뷰<br/><sub>Codex Security · Claude Security · `/security-review`</sub> | 🛄 **공항 검색대** — 스캐너 스윕<br/><sub>security-sweep · elixir-security-audit</sub> |
+|---|---|---|
+| 하는 일 | 코드를 처음부터 **읽고 추리**해서 "이 문은 잠겨 있지 않네" 같은 **설계·로직 결함**을 찾습니다 | 모든 가방(프로젝트·서버·이미지)을 통과시키며 **수배 목록(CVE DB)에 오른 위험물**을 빠짐없이 찾습니다 |
+| 잘 찾는 것 | 인가 우회, 잘못된 신뢰 경계, 처음 보는 수법 | 오래된 라이브러리, 서버 OS 패키지 취약점, 흘린 비밀값, 언어별 위험 API |
+| 놓치기 쉬운 것 | 수배 목록 대조 (의존성 CVE는 직접 안 봄) | 목록에 없는 새로운 수법 |
+| 결과 | 똑똑하지만 돌릴 때마다 조금씩 다름 | 같은 입력이면 **항상 같은 결과** |
+| 확인 방법 | 다른 에이전트가 한 번 더 검증 | 수배 목록이 **진짜인지 OSV로 조회**하고, 그 물건을 **실제로 꺼내 쓰는지(도달성)** 확인 |
+| 비용 | 모델 토큰 (스캔마다) | 스캐너는 무료, LLM은 분류할 때만 |
+
+**그래서 둘 다 씁니다.** 검색대로 알려진 위험을 먼저 전부 걸러내고, 중요한 저장소는 탐정에게 맡겨 숨은 로직 결함을 찾습니다.
+
+| 이럴 때 | 이것부터 |
+|---|---|
+| "우리 프로젝트·서버 전체에 알려진 취약점 있나?" | **security-sweep** |
+| "이 Phoenix 앱 고쳐 줘" | **elixir-security-audit** |
+| "PR 하나 머지 전에 빨리 봐 줘" | `/security-review` |
+| "결제·인증 같은 핵심 저장소를 깊게 털어 줘" | **Claude Security** 또는 **Codex Security** |
+
+
+### 자세히 비교
+
 ![보안 점검 도구 비교: Codex Security, /security-review, Claude Security, elixir-security-audit, security-sweep](docs/comparison.svg)
 
 | | OpenAI **Codex Security** | Claude Code **`/security-review`** | Anthropic **Claude Security** 플러그인 | **elixir-security-audit** | **security-sweep** |
