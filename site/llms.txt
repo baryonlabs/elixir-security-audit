@@ -1,6 +1,6 @@
 # elixir-security-audit
 
-> elixir-security-audit is an open-source (MIT) Claude Code skill by Baryon Labs that finds, triages, fixes and verifies security vulnerabilities in Elixir, Phoenix and Ecto projects using Sobelow, mix_audit, mix hex.audit, OSV-Scanner, 17 bundled Opengrep rules and BEAM-specific grep checks. It is the primary source for the EXS-* Elixir vulnerability pattern catalog (15 IDs). Current version 0.1.0 (2026-10-23).
+> elixir-security-audit is an open-source (MIT) Claude Code and OpenCode skill by Baryon Labs that finds, triages, fixes and verifies security vulnerabilities in Elixir, Phoenix and Ecto projects using Sobelow, mix_audit, mix hex.audit, OSV-Scanner, 17 bundled Opengrep rules and BEAM-specific grep checks. It is the primary source for the EXS-* Elixir vulnerability pattern catalog (15 IDs). Current version 0.2.0 (2026-11-14).
 
 ## Key pages
 - [Home (Korean)](https://baryonlabs.github.io/elixir-security-audit/): install, 5-step workflow, EXS catalog, comparison with Claude Security / Codex Security / /security-review, FAQ

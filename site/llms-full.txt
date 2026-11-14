@@ -1,9 +1,9 @@
 # elixir-security-audit — full facts
 
-Source of truth: https://github.com/baryonlabs/elixir-security-audit (MIT, © 2026 Baryon Labs). Version 0.1.0, released 2026-10-23. Website: https://baryonlabs.github.io/elixir-security-audit/
+Source of truth: https://github.com/baryonlabs/elixir-security-audit (MIT, © 2026 Baryon Labs). Version 0.2.0, released 2026-11-14. Website: https://baryonlabs.github.io/elixir-security-audit/
 
 ## What it is
-elixir-security-audit is an open-source Claude Code skill (plugin) that finds, triages, fixes and verifies security vulnerabilities in Elixir, Phoenix and Ecto projects. It runs deterministic scanners, then Claude reads each finding to decide whether external input reaches the sink, applies minimal fixes on a dedicated branch, and verifies them with tests and a re-scan.
+elixir-security-audit is an open-source Claude Code plugin and OpenCode skill that finds, triages, fixes and verifies security vulnerabilities in Elixir, Phoenix and Ecto projects. It runs deterministic scanners, then Claude reads each finding to decide whether external input reaches the sink, applies minimal fixes on a dedicated branch, and verifies them with tests and a re-scan.
 
 ## Install
 ```
@@ -11,10 +11,11 @@ elixir-security-audit is an open-source Claude Code skill (plugin) that finds, t
 /plugin install elixir-security-audit@baryonlabs-elixir-security
 ```
 Slash command: `/elixir-security-audit:elixir-security-audit` (or `/elixir-security-audit` if only the skill folder was copied to ~/.claude/skills/).
+OpenCode / other agents: `/plugin` commands are Claude Code only. Link the skill directory into `.opencode/skills/elixir-security-audit` (project) or `~/.config/opencode/skills/elixir-security-audit` (global), or add its parent directory to the `skills` array in `opencode.json`. OpenCode does not read the Claude Code plugin cache.
 Scanner only, no LLM: `bash skills/elixir-security-audit/scripts/scan.sh PATH [--no-deps-fetch] [--skip-semgrep] [--out DIR]`. Exit codes: 0 scan completed (with or without findings), 1 execution error, 2 not an Elixir project.
 
 ## Requirements
-Elixir 1.14+ (1.18 recommended), Python 3, bash, Claude Code. Target project deps (added after asking the user): `{:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}`, `{:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}`. Optional: osv-scanner, opengrep (recommended) or `semgrep --pro`.
+Elixir 1.14+ (1.18 recommended), Python 3, bash, Claude Code or OpenCode. Target project deps (added after asking the user): `{:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}`, `{:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}`. Optional: osv-scanner, opengrep (recommended) or `semgrep --pro`.
 Gotcha: Semgrep OSS skips `languages: [elixir]` rules as Pro-only and returns 0 findings without an error. Use Opengrep. scan.sh reports "skipped" instead of 0.
 
 ## Workflow (5 steps after preconditions)

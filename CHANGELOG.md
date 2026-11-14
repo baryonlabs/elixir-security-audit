@@ -2,6 +2,15 @@
 
 이 프로젝트는 [Semantic Versioning](https://semver.org/lang/ko/)을 따릅니다.
 
+## [0.2.0] - 2026-11-14
+
+### 추가
+- OpenCode 호환: `.opencode/skills/elixir-security-audit` 심볼릭 링크, README에 OpenCode / 다른 에이전트 설치 안내
+- `test/opencode.sh`: 복사한 스킬 디렉터리에서 `CLAUDE_PLUGIN_ROOT` 없이 통합 테스트 실행, CI 포함
+
+### 변경
+- SKILL.md: `CLAUDE_PLUGIN_ROOT` 없이도 동작하도록 스캔 명령을 스킬 디렉터리 기준으로 수정
+
 ## [0.1.0] - 2026-10-23
 
 ### 추가
@@ -13,4 +22,5 @@
 - 사용자 프로젝트용 GitHub Actions 템플릿
 - Codex Security · `/security-review` · Claude Security 비교 인포그래픽
 
+[0.2.0]: https://github.com/baryonlabs/elixir-security-audit/releases/tag/v0.2.0
 [0.1.0]: https://github.com/baryonlabs/elixir-security-audit/releases/tag/v0.1.0
