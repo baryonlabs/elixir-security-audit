@@ -2,6 +2,11 @@
 
 이 프로젝트는 [Semantic Versioning](https://semver.org/lang/ko/)을 따릅니다.
 
+## [0.2.1] - 2026-11-14
+
+### 문서
+- README: OpenCode에서 스킬을 실행하는 방법 보강 — `@elixir-security-audit` 멘션, `opencode run` 헤드리스 실행, 스캐너 단독 실행, `/reload` 문제 해결
+
 ## [0.2.0] - 2026-11-14
 
 ### 추가
@@ -22,5 +27,6 @@
 - 사용자 프로젝트용 GitHub Actions 템플릿
 - Codex Security · `/security-review` · Claude Security 비교 인포그래픽
 
+[0.2.1]: https://github.com/baryonlabs/elixir-security-audit/releases/tag/v0.2.1
 [0.2.0]: https://github.com/baryonlabs/elixir-security-audit/releases/tag/v0.2.0
 [0.1.0]: https://github.com/baryonlabs/elixir-security-audit/releases/tag/v0.1.0

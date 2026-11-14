@@ -54,7 +54,7 @@
     "Python"
    ],
    "license": "https://opensource.org/licenses/MIT",
-   "version": "0.2.0",
+   "version": "0.2.1",
    "dateModified": "2026-11-14",
    "author": {
     "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
@@ -69,7 +69,7 @@
    "name": "elixir-security-audit",
    "description": "elixir-security-audit은 Elixir·Phoenix 프로젝트의 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 판정하고, 고치고, 검증하는 오픈소스 Claude Code·OpenCode 스킬입니다.",
    "applicationCategory": "DeveloperApplication",
-   "softwareVersion": "0.2.0",
+   "softwareVersion": "0.2.1",
    "softwareRequirements": "Claude Code or OpenCode, Elixir 1.14+, Python 3, bash",
    "license": "https://opensource.org/licenses/MIT",
    "url": "https://baryonlabs.github.io/elixir-security-audit/",
@@ -152,7 +152,7 @@
 <div class="hero"><div class="wrap">
 <h1>elixir-security-audit: Elixir·Phoenix 보안 점검·수정 스킬</h1>
 <p class="answer"><strong>elixir-security-audit은 Elixir·Phoenix 프로젝트의 보안 취약점을 Sobelow·mix_audit·OSV·Opengrep으로 찾고, 판정하고, 고치고, 검증하는 오픈소스 Claude Code·OpenCode 스킬입니다.</strong> 결정적 스캐너로 빠짐없이 훑고, Claude가 각 발견이 외부 입력에 닿는지 읽어 판정한 뒤, 별도 브랜치에서 최소 변경으로 고치고 테스트로 검증합니다.</p>
-<ul class="chips"><li>v0.2.0 (2026-11-14)</li><li>MIT · 무료</li><li>Claude Code · OpenCode</li><li>EXS 패턴 15종</li><li>Opengrep 룰 17개</li></ul>
+<ul class="chips"><li>v0.2.1 (2026-11-14)</li><li>MIT · 무료</li><li>Claude Code · OpenCode</li><li>EXS 패턴 15종</li><li>Opengrep 룰 17개</li></ul>
 <div class="cta"><a class="btn btn-primary" href="#install">설치하기</a><a class="btn btn-ghost" href="https://github.com/baryonlabs/elixir-security-audit">GitHub에서 보기</a></div>
 </div></div>
 
@@ -182,7 +182,7 @@
 <pre><code class="language-bash">git clone https://github.com/baryonlabs/elixir-security-audit
 mkdir -p .opencode/skills
 ln -s "$(pwd)/elixir-security-audit/skills/elixir-security-audit" .opencode/skills/elixir-security-audit</code></pre>
-<p>호출은 <code>@elixir-security-audit 보안 점검해줘</code> 또는 자연어로 하면 됩니다.</p>
+<p>호출은 <code>@elixir-security-audit 보안 점검해줘</code> 또는 자연어로 하면 됩니다. 헤드리스로는 <code>opencode run "@elixir-security-audit 스캔만 실행해줘"</code>를 씁니다.</p>
 <h3>스킬만 복사해서 쓰기 / 스캐너만 단독 실행</h3>
 <pre><code class="language-bash">git clone https://github.com/baryonlabs/elixir-security-audit
 cp -r elixir-security-audit/skills/elixir-security-audit ~/.claude/skills/
@@ -288,7 +288,7 @@ bash ~/.claude/skills/elixir-security-audit/scripts/scan.sh /path/to/project \
 <h2>프로젝트 정보</h2>
 <dl class="facts">
 <dt>이름</dt><dd>elixir-security-audit</dd>
-<dt>버전</dt><dd>0.2.0 (2026-11-14)</dd>
+<dt>버전</dt><dd>0.2.1 (2026-11-14)</dd>
 <dt>라이선스·가격</dt><dd>MIT, 무료 오픈소스</dd>
 <dt>언어</dt><dd>Elixir · Shell · Python (<code>scan.sh</code>는 bash 3.2+, <code>summarize.py</code>는 python3 표준 라이브러리만)</dd>
 <dt>필요 조건</dt><dd>Claude Code 또는 OpenCode, Elixir 1.14+, Python 3, bash</dd>

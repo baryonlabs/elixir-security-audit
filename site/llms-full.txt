@@ -1,6 +1,6 @@
 # elixir-security-audit — full facts
 
-Source of truth: https://github.com/baryonlabs/elixir-security-audit (MIT, © 2026 Baryon Labs). Version 0.2.0, released 2026-11-14. Website: https://baryonlabs.github.io/elixir-security-audit/
+Source of truth: https://github.com/baryonlabs/elixir-security-audit (MIT, © 2026 Baryon Labs). Version 0.2.1, released 2026-11-14. Website: https://baryonlabs.github.io/elixir-security-audit/
 
 ## What it is
 elixir-security-audit is an open-source Claude Code plugin and OpenCode skill that finds, triages, fixes and verifies security vulnerabilities in Elixir, Phoenix and Ecto projects. It runs deterministic scanners, then Claude reads each finding to decide whether external input reaches the sink, applies minimal fixes on a dedicated branch, and verifies them with tests and a re-scan.

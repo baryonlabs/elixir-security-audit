@@ -6,7 +6,7 @@
       "name": "elixir-security-audit",
       "source": "./",
       "description": "Elixir/Phoenix security audit & fix skill (Sobelow, mix_audit, hex.audit, OSV, Semgrep).",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "category": "security"
     }
   ]

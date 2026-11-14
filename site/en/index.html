@@ -54,7 +54,7 @@
     "Python"
    ],
    "license": "https://opensource.org/licenses/MIT",
-   "version": "0.2.0",
+   "version": "0.2.1",
    "dateModified": "2026-11-14",
    "author": {
     "@id": "https://baryonlabs.github.io/elixir-security-audit/#org"
@@ -69,7 +69,7 @@
    "name": "elixir-security-audit",
    "description": "elixir-security-audit is an open-source Claude Code and OpenCode skill that finds, triages, fixes and verifies security vulnerabilities in Elixir and Phoenix projects using Sobelow, mix_audit, OSV and Opengrep.",
    "applicationCategory": "DeveloperApplication",
-   "softwareVersion": "0.2.0",
+   "softwareVersion": "0.2.1",
    "softwareRequirements": "Claude Code or OpenCode, Elixir 1.14+, Python 3, bash",
    "license": "https://opensource.org/licenses/MIT",
    "url": "https://baryonlabs.github.io/elixir-security-audit/",
@@ -152,7 +152,7 @@
 <div class="hero"><div class="wrap">
 <h1>elixir-security-audit: security audit and fix skill for Elixir and Phoenix</h1>
 <p class="answer"><strong>elixir-security-audit is an open-source Claude Code and OpenCode skill that finds, triages, fixes and verifies security vulnerabilities in Elixir and Phoenix projects using Sobelow, mix_audit, OSV and Opengrep.</strong> Deterministic scanners cover everything, Claude reads each finding to decide whether external input reaches it, then applies minimal fixes on a separate branch and verifies them with tests.</p>
-<ul class="chips"><li>v0.2.0 (2026-11-14)</li><li>MIT · free</li><li>Claude Code · OpenCode</li><li>15 EXS patterns</li><li>17 Opengrep rules</li></ul>
+<ul class="chips"><li>v0.2.1 (2026-11-14)</li><li>MIT · free</li><li>Claude Code · OpenCode</li><li>15 EXS patterns</li><li>17 Opengrep rules</li></ul>
 <div class="cta"><a class="btn btn-primary" href="#install">Install</a><a class="btn btn-ghost" href="https://github.com/baryonlabs/elixir-security-audit">View on GitHub</a></div>
 </div></div>
 
@@ -169,7 +169,7 @@
 <pre><code class="language-bash">git clone https://github.com/baryonlabs/elixir-security-audit
 mkdir -p .opencode/skills
 ln -s "$(pwd)/elixir-security-audit/skills/elixir-security-audit" .opencode/skills/elixir-security-audit</code></pre>
-<p>Then ask <code>@elixir-security-audit security audit this project</code>, or use natural language.</p>
+<p>Then ask <code>@elixir-security-audit security audit this project</code>, or use natural language. Headless: <code>opencode run "@elixir-security-audit scan only"</code>.</p>
 <h3>Copy the skill only / run the scanners standalone</h3>
 <pre><code class="language-bash">git clone https://github.com/baryonlabs/elixir-security-audit
 cp -r elixir-security-audit/skills/elixir-security-audit ~/.claude/skills/
@@ -274,7 +274,7 @@ bash ~/.claude/skills/elixir-security-audit/scripts/scan.sh /path/to/project \
 <h2>Project facts</h2>
 <dl class="facts">
 <dt>Name</dt><dd>elixir-security-audit</dd>
-<dt>Version</dt><dd>0.2.0 (2026-11-14)</dd>
+<dt>Version</dt><dd>0.2.1 (2026-11-14)</dd>
 <dt>License / price</dt><dd>MIT, free and open source</dd>
 <dt>Languages</dt><dd>Elixir · Shell · Python (<code>scan.sh</code> needs bash 3.2+, <code>summarize.py</code> uses only the python3 standard library)</dd>
 <dt>Requirements</dt><dd>Claude Code or OpenCode, Elixir 1.14+, Python 3, bash</dd>

@@ -68,7 +68,33 @@ mkdir -p ~/.config/opencode/skills
 ln -s "$REPO/skills/elixir-security-audit" ~/.config/opencode/skills/elixir-security-audit
 ```
 
-OpenCode는 `~/.claude/skills`도 읽지만, 같은 ID의 복사본이 여러 개면 우선순위에 따라 오래된 버전이 로드될 수 있습니다. `~/.config/opencode/skills` 또는 프로젝트 `.opencode/skills`를 권장합니다. 호출은 `@elixir-security-audit 보안 점검해줘` 또는 자연어로 하면 됩니다. 이 저장소에는 `.opencode/skills/elixir-security-audit` 심볼릭 링크가 포함되어 있어 저장소 루트에서 바로 사용할 수 있습니다.
+OpenCode는 `~/.claude/skills`도 읽지만, 같은 ID의 복사본이 여러 개면 우선순위에 따라 오래된 버전이 로드될 수 있습니다. `~/.config/opencode/skills` 또는 프로젝트 `.opencode/skills`를 권장합니다. 이 저장소에는 `.opencode/skills/elixir-security-audit` 심볼릭 링크가 포함되어 있어 저장소 루트에서 바로 사용할 수 있습니다.
+
+실행은 스킬을 직접 지정하면 확실합니다. 자연어("이 Phoenix 앱 보안 점검해줘")로도 선택됩니다.
+
+```text
+@elixir-security-audit 이 프로젝트 보안 점검하고 실제 취약점만 고쳐줘
+```
+
+헤드리스 CLI에서는:
+
+```bash
+cd /path/to/elixir-project
+
+# 스캔만
+opencode run "@elixir-security-audit 스캔만 실행해줘"
+
+# 스캔 + 실제 취약점 수정 (권한 자동 승인)
+opencode run --auto "@elixir-security-audit 보안 점검하고 실제 취약점만 고쳐줘"
+```
+
+LLM 없이 스캐너만 실행하려면:
+
+```bash
+bash ~/.config/opencode/skills/elixir-security-audit/scripts/scan.sh /path/to/elixir-project
+```
+
+`/plugin`과 `/elixir-security-audit:elixir-security-audit` 명령은 Claude Code 전용입니다. OpenCode에서 스킬이 보이지 않으면 `/reload`를 실행하거나 OpenCode를 다시 시작하세요.
 
 <details>
 <summary>스킬만 복사해서 쓰기 / 스캐너만 단독 실행</summary>
@@ -228,6 +254,7 @@ skills/elixir-security-audit/
 test/fixtures/vulnerable_app/         일부러 취약한 Phoenix 앱 (배포 금지)
 test/rules/                           Semgrep 룰 테스트
 test/run.sh                           통합 테스트
+test/opencode.sh                      OpenCode 호환 테스트 (CLAUDE_PLUGIN_ROOT 없이 실행)
 ```
 
 ## 개발과 테스트
@@ -286,7 +313,29 @@ mkdir -p .opencode/skills
 ln -s "$REPO/skills/elixir-security-audit" .opencode/skills/elixir-security-audit
 ```
 
-Then ask *"security audit this Elixir project"* or reference `@elixir-security-audit` directly.
+OpenCode also reads `~/.claude/skills`, but a stale copy with the same ID can win by precedence. Prefer `~/.config/opencode/skills` or the project `.opencode/skills`; this repository already contains the symlink.
+
+Run it interactively:
+
+```text
+@elixir-security-audit security audit this project and fix only the real issues
+```
+
+Or headless:
+
+```bash
+cd /path/to/elixir-project
+opencode run "@elixir-security-audit scan only"
+opencode run --auto "@elixir-security-audit security audit this project and fix only the real issues"
+```
+
+Standalone scanner:
+
+```bash
+bash ~/.config/opencode/skills/elixir-security-audit/scripts/scan.sh /path/to/elixir-project
+```
+
+The `/plugin` and `/elixir-security-audit:elixir-security-audit` commands are Claude Code only. If the skill is missing in OpenCode, run `/reload` or restart OpenCode.
 
 `test/fixtures/vulnerable_app` is **intentionally vulnerable**. Never deploy it.
 
