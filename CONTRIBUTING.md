@@ -7,8 +7,13 @@
 
 ```bash
 bash test/run.sh          # 취약 앱 스캔 → 기대 EXS ID 전부 탐지 확인
+bash test/opencode.sh     # OpenCode 호환: 복사한 스킬 디렉터리에서 CLAUDE_PLUGIN_ROOT 없이 스캔
 bash test/rules/run.sh    # Opengrep 룰 테스트 (OPENGREP=/path/to/opengrep)
 ```
+
+OpenCode 호환은 저장소 루트의 `.opencode/skills/elixir-security-audit` 심볼릭 링크로 확인합니다.
+SKILL.md의 명령은 특정 에이전트의 환경 변수(`CLAUDE_PLUGIN_ROOT`)에 의존하지 않고,
+스킬 디렉터리 기준 상대 경로로 실행되어야 합니다.
 
 ## 새 탐지 패턴 추가 체크리스트
 

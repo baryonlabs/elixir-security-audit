@@ -3,7 +3,8 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FIXTURE="$ROOT/test/fixtures/vulnerable_app"
-SCAN="$ROOT/skills/elixir-security-audit/scripts/scan.sh"
+SKILL_DIR="${SKILL_DIR:-$ROOT/skills/elixir-security-audit}"
+SCAN="$SKILL_DIR/scripts/scan.sh"
 EXPECTED="$ROOT/test/fixtures/expected_findings.txt"
 OUT="$(mktemp -d)"
 trap 'rm -rf "$OUT"' EXIT

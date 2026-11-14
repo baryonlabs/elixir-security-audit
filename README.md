@@ -51,6 +51,25 @@ Elixir 저장소에서 Claude Code를 열고 말하면 됩니다.
 
 스킬 폴더만 `~/.claude/skills/`에 복사했다면 명령은 `/elixir-security-audit`입니다. "이 Phoenix 앱 보안 점검해줘"처럼 자연어로 요청해도 Claude가 스킬을 고를 수 있지만, 명령을 붙이는 것이 확실합니다.
 
+### OpenCode / 다른 에이전트
+
+`/plugin` 명령은 Claude Code 전용입니다. OpenCode는 Claude Code의 플러그인 캐시(`~/.claude/plugins/cache/`)를 읽지 않으므로, 스킬 디렉터리를 OpenCode 스킬 경로에 연결합니다.
+
+```bash
+REPO="$HOME/src/elixir-security-audit"
+git clone https://github.com/baryonlabs/elixir-security-audit "$REPO"
+
+# 프로젝트에 설치 (권장)
+mkdir -p .opencode/skills
+ln -s "$REPO/skills/elixir-security-audit" .opencode/skills/elixir-security-audit
+
+# 또는 전역 설치
+mkdir -p ~/.config/opencode/skills
+ln -s "$REPO/skills/elixir-security-audit" ~/.config/opencode/skills/elixir-security-audit
+```
+
+OpenCode는 `~/.claude/skills`도 읽지만, 같은 ID의 복사본이 여러 개면 우선순위에 따라 오래된 버전이 로드될 수 있습니다. `~/.config/opencode/skills` 또는 프로젝트 `.opencode/skills`를 권장합니다. 호출은 `@elixir-security-audit 보안 점검해줘` 또는 자연어로 하면 됩니다. 이 저장소에는 `.opencode/skills/elixir-security-audit` 심볼릭 링크가 포함되어 있어 저장소 루트에서 바로 사용할 수 있습니다.
+
 <details>
 <summary>스킬만 복사해서 쓰기 / 스캐너만 단독 실행</summary>
 
@@ -196,7 +215,10 @@ flowchart LR
 ## 저장소 구성
 
 ```
-.claude-plugin/                       플러그인 + 마켓플레이스 매니페스트
+.claude-plugin/                       Claude Code 플러그인 + 마켓플레이스 매니페스트
+.opencode/skills/
+  elixir-security-audit -> ../../skills/elixir-security-audit
+                                      OpenCode 자동 탐색용 심볼릭 링크
 skills/elixir-security-audit/
   SKILL.md                            워크플로 본문
   references/                         patterns / triage / phoenix-config
@@ -212,6 +234,7 @@ test/run.sh                           통합 테스트
 
 ```bash
 bash test/run.sh                       # fixture 스캔 → 기대 EXS ID 전부 탐지 확인
+bash test/opencode.sh                  # OpenCode 호환: 복사한 스킬에서 CLAUDE_PLUGIN_ROOT 없이 스캔
 bash test/rules/run.sh                 # Opengrep 룰 테스트 (OPENGREP=/path/to/opengrep)
 ```
 
@@ -253,6 +276,17 @@ Ecto 3는 `fragment`의 첫 인자가 문자열 리터럴이 아니면 컴파일
 ```
 
 Then ask Claude: *"security audit this Elixir project and fix the real issues"*. The scanner also runs standalone without an LLM: `bash skills/elixir-security-audit/scripts/scan.sh PATH`.
+
+For OpenCode (and other agents that discover `.opencode/skills`), link the skill directory instead — OpenCode does not read Claude Code's plugin cache:
+
+```bash
+REPO="$HOME/src/elixir-security-audit"
+git clone https://github.com/baryonlabs/elixir-security-audit "$REPO"
+mkdir -p .opencode/skills
+ln -s "$REPO/skills/elixir-security-audit" .opencode/skills/elixir-security-audit
+```
+
+Then ask *"security audit this Elixir project"* or reference `@elixir-security-audit` directly.
 
 `test/fixtures/vulnerable_app` is **intentionally vulnerable**. Never deploy it.
 

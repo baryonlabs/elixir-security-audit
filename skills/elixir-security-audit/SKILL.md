@@ -82,14 +82,15 @@ mix deps.get
 
 ## 2. Scan
 
-스킬 디렉터리의 스크립트를 실행한다:
+스킬 디렉터리의 스크립트를 실행한다. `<스킬 디렉터리>` 는 **이 SKILL.md 가 있는 디렉터리**다
+(OpenCode 등은 스킬을 로드할 때 base directory 를 알려 준다).
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/elixir-security-audit/scripts/scan.sh" .
+bash "<스킬 디렉터리>/scripts/scan.sh" .
 ```
 
-`CLAUDE_PLUGIN_ROOT` 가 비어 있으면 이 SKILL.md 와 같은 디렉터리의 `scripts/scan.sh` 를 절대 경로로 실행한다
-(예: `bash <이 SKILL.md 가 있는 디렉터리>/scripts/scan.sh .`).
+Claude Code 에서 `CLAUDE_PLUGIN_ROOT` 가 설정되어 있으면
+`bash "${CLAUDE_PLUGIN_ROOT}/skills/elixir-security-audit/scripts/scan.sh" .` 로 바꿔 써도 된다.
 
 종료 코드: `0` 스캔 완료(발견 유무 무관), `2` Elixir 프로젝트 아님, `1` 실행 오류.
 도구 누락 경고는 보고서의 "한계" 절에 기록한다.
@@ -159,7 +160,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/elixir-security-audit/scripts/scan.sh" .
 ```bash
 mix compile --warnings-as-errors
 mix test
-bash "${CLAUDE_PLUGIN_ROOT}/skills/elixir-security-audit/scripts/scan.sh" .
+bash "<스킬 디렉터리>/scripts/scan.sh" .
 ```
 
 - 컴파일 경고/테스트 실패가 수정으로 생긴 것이면 고친다. 원래부터 있던 실패는 구분해서 보고한다
@@ -207,5 +208,5 @@ Elixir / OTP / Phoenix / Ecto 버전, 사용한 도구와 버전, 누락 도구
 ## 보완 도구
 
 이 스킬은 도구·패턴 기반 점검이다. 인가 누락(IDOR), 비즈니스 로직 결함, 멀티테넌시 경계 같은 **논리 버그**는
-잡지 못한다. 이 단계가 끝난 뒤 Anthropic 의 `/security-review` 명령이나 Claude Security 플러그인으로
-변경분/전체 코드에 대한 리뷰를 이어서 하도록 제안한다.
+잡지 못한다. Claude Code 를 쓴다면 이 단계 뒤에 `/security-review` 명령이나 Claude Security 플러그인으로
+변경분/전체 코드 리뷰를 이어가도록 제안할 수 있다 (다른 에이전트에서는 생략).

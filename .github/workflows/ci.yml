@@ -47,3 +47,5 @@ jobs:
           mix test
       - name: scan fixture and assert expected findings
         run: bash test/run.sh
+      - name: skill runs without CLAUDE_PLUGIN_ROOT (OpenCode compatibility)
+        run: bash test/opencode.sh
